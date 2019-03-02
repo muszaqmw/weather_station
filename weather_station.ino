@@ -54,7 +54,7 @@ void setup()
   ssd1306Display.clearDisplay();
 }
 
-uint32_t measurementDelay = 120000;
+uint32_t measurementDelay = 5000;
 
 void loop() {
   
@@ -67,7 +67,7 @@ void loop() {
   {
     Serial.print("Aktualna temperatura: ");
     Serial.print(temperature);
-    Serial.println("°C");
+    Serial.println("Â°C");
   }
 
   float humidity = temperatureHumiditySensor.readHumidity();
@@ -93,27 +93,52 @@ void loop() {
     temperature2 = pressureSensor.getTemperature();
     Serial.print("Aktualna temperatura z MPL3115A2: ");
     Serial.print(temperature2);
-    Serial.println("°C\n");
+    Serial.println("Â°C\n");
   }
 
-  ssd1306Display.setTextSize(1);
-  ssd1306Display.setTextColor(WHITE);
-  ssd1306Display.setCursor(0,0);
+  bool hugeDisplay = true;
+
+  if(not hugeDisplay)
+  {
+    ssd1306Display.clearDisplay();
+    ssd1306Display.setTextSize(1);
+    ssd1306Display.setTextColor(WHITE);
+    ssd1306Display.setCursor(0,0);
   
-  ssd1306Display.print("Temperatura: ");
-  ssd1306Display.print(temperature2);
-  ssd1306Display.println("C");
+    ssd1306Display.print("Temperatura: ");
+    ssd1306Display.print(temperature);
+    ssd1306Display.println("C");
   
-  ssd1306Display.print("Wilgotnosc: ");
-  ssd1306Display.print(humidity);
-  ssd1306Display.println("%");
+    ssd1306Display.print("Wilgotnosc: ");
+    ssd1306Display.print(humidity);
+    ssd1306Display.println("%");
   
-  ssd1306Display.print("Cisnienie: ");
-  ssd1306Display.print(pressure);
-  ssd1306Display.println("hPa");
+    ssd1306Display.print("Cisnienie: ");
+    ssd1306Display.print(pressure);
+    ssd1306Display.println("hPa");
   
-  ssd1306Display.display();
+    ssd1306Display.display();
+  }
+  else
+  {
+    ssd1306Display.clearDisplay();
+    ssd1306Display.setTextSize(2);
+    ssd1306Display.setTextColor(WHITE);
+    ssd1306Display.setCursor(0,0);
+  
+    ssd1306Display.print("T:");
+    ssd1306Display.print(temperature);
+    ssd1306Display.println("C");
+  
+    ssd1306Display.print("H:");
+    ssd1306Display.print(humidity);
+    ssd1306Display.println("%");
+  
+    ssd1306Display.print("P:");
+    ssd1306Display.print(pressure);
+    ssd1306Display.println("hPa");
+  
+    ssd1306Display.display();
+  }
   delay(measurementDelay);
-  ssd1306Display.clearDisplay();
-  
 }
