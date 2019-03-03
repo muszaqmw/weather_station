@@ -1,144 +1,135 @@
-#include <Wire.h>
 #include <SPI.h>
-#include <DHT.h>
-#include <DHT_U.h>
+#include <Wire.h>
+#include <Adafruit_BMP085.h>
 #include <Adafruit_MPL3115A2.h>
-#include <Adafruit_Sensor.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include "DHT.h"
+
+void printSerial();
+void printOled();
+void takeMeasurement();
+
+constexpr uint8_t DHTPIN = 6;
+constexpr uint8_t DHTTYPE = DHT11;   // DHT 11
+
+constexpr uint8_t SCREEN_WIDTH = 128; // OLED display width, in pixels
+constexpr uint8_t SCREEN_HEIGHT = 64; // OLED display height, in pixels
+
+// Declaration for SSD1306 display connected using software SPI (default case):
+constexpr uint8_t OLED_MOSI  = 11;
+constexpr uint8_t OLED_CLK   = 12;
+constexpr uint8_t OLED_DC    = 9;
+constexpr uint8_t OLED_CS    = 8;
+constexpr uint8_t OLED_RESET = 10;
+
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT,
+  OLED_MOSI, OLED_CLK, OLED_DC, OLED_RESET, OLED_CS);
 
 
+Adafruit_BMP085 bmp;
+Adafruit_MPL3115A2 baro = Adafruit_MPL3115A2();
 
-//DHT11
-constexpr uint8_t dhtDigitalPin = 2;
-constexpr uint8_t dhtType = 11;
+DHT dht(DHTPIN, DHTTYPE);
 
-DHT temperatureHumiditySensor(dhtDigitalPin, dhtType);
 
-//MPL3115A2
-Adafruit_MPL3115A2 pressureSensor = Adafruit_MPL3115A2();
+struct Measurements
+{
+  struct DHT11Sensor
+  {
+    float temperature = 0;
+    float humidity = 0;
+  };
+  
+  struct BMP180Sensor
+  {
+    float temperature = 0;
+    float pressure = 0;
+  };
 
-//SSD1306
-constexpr uint8_t oledWidth = 128;
-constexpr uint8_t oledHeight = 64;
-constexpr uint8_t oledCLK = 12;
-constexpr uint8_t oledMOSI = 11;
-constexpr uint8_t oledReset = 10;
-constexpr uint8_t oledDC = 9;
-constexpr uint8_t oledCS = 8; //unusued
+  struct MPL3115A2Sensor
+  {
+    float temperature = 0;
+    float pressure = 0;
+  };
 
-Adafruit_SSD1306 ssd1306Display(oledWidth, oledHeight,
-  oledMOSI, oledCLK, oledDC, oledReset, oledCS);
+  DHT11Sensor       dht11;
+  BMP180Sensor      bmp180;
+  MPL3115A2Sensor   mpl3115a2;
+};
 
+Measurements measResults;
 
 void setup() 
 {
   Serial.begin(9600);
-  Serial.println("Inicjalizacja DHT11");
-  temperatureHumiditySensor.begin();
-
-  if(not pressureSensor.begin())
+  dht.begin();
+  
+  if (!bmp.begin())
   {
-    Serial.println("Problem z zainicjowaniem MPL3115A2");
-    while(true) {};
+    Serial.println("Could not find a valid BMP085 sensor, check wiring!");
+    while (1) {}
   }
 
-  if(not ssd1306Display.begin(SSD1306_SWITCHCAPVCC))
+  if (!baro.begin()) 
   {
-    Serial.println("Problem z zainicjowaniem SSD1306");
-    while(true) {};
+    Serial.println("Couldnt find sensor");
+    while(1){}
+    return;
   }
-  ssd1306Display.display();
-  delay(2000);
 
-  ssd1306Display.clearDisplay();
+  if(!display.begin(SSD1306_SWITCHCAPVCC)) 
+  {
+    Serial.println("SSD1306 allocation failed");
+    while(1){};
+  }
+
+  display.display();
 }
 
-uint32_t measurementDelay = 5000;
+void loop() 
+{
+  takeMeasurement();
+  printSerial();
+  printOled();
+  delay(20000);
+}
 
-void loop() {
-  
-  float temperature = temperatureHumiditySensor.readTemperature();
-  if(isnan(temperature))
-  {
-    Serial.println("Blad w odczycie temperatury");
-  }
-  else
-  {
-    Serial.print("Aktualna temperatura: ");
-    Serial.print(temperature);
-    Serial.println("Â°C");
-  }
+void takeMeasurement()
+{
+  measResults.dht11.temperature = dht.readTemperature();
+  measResults.dht11.humidity = dht.readHumidity();
 
-  float humidity = temperatureHumiditySensor.readHumidity();
-  if(isnan(humidity))
-  {
-    Serial.println("Blad w odczycie wilgotnosci"); 
-  }
-  else
-  {
-    Serial.print("Aktualna wilgotnosc: ");
-    Serial.print(humidity);
-    Serial.println("%");   
-  }
+  measResults.bmp180.temperature = bmp.readTemperature();
+  measResults.bmp180.pressure = bmp.readPressure();
 
-  float pressure = pressureSensor.getPressure()/100;
-  Serial.print("Aktualne cisnienie: ");
-  Serial.print(pressure);
-  Serial.println("hPa");
+  measResults.mpl3115a2.pressure = baro.getPressure();
+  measResults.mpl3115a2.temperature = baro.getTemperature();  
+}
 
-  float temperature2;
-  if(true)
-  {
-    temperature2 = pressureSensor.getTemperature();
-    Serial.print("Aktualna temperatura z MPL3115A2: ");
-    Serial.print(temperature2);
-    Serial.println("Â°C\n");
-  }
+void printSerial()
+{
+  Serial.print(measResults.dht11.temperature); Serial.println("C");
+  Serial.print(measResults.dht11.humidity); Serial.println("%");
+  
+  Serial.print(measResults.bmp180.temperature); Serial.println("C");
+  Serial.print(measResults.bmp180.pressure/100); Serial.println("hPa");
 
-  bool hugeDisplay = true;
+  Serial.print(measResults.mpl3115a2.temperature); Serial.println("C");
+  Serial.print(measResults.mpl3115a2.pressure/100); Serial.println("hPa");
+}
 
-  if(not hugeDisplay)
-  {
-    ssd1306Display.clearDisplay();
-    ssd1306Display.setTextSize(1);
-    ssd1306Display.setTextColor(WHITE);
-    ssd1306Display.setCursor(0,0);
-  
-    ssd1306Display.print("Temperatura: ");
-    ssd1306Display.print(temperature);
-    ssd1306Display.println("C");
-  
-    ssd1306Display.print("Wilgotnosc: ");
-    ssd1306Display.print(humidity);
-    ssd1306Display.println("%");
-  
-    ssd1306Display.print("Cisnienie: ");
-    ssd1306Display.print(pressure);
-    ssd1306Display.println("hPa");
-  
-    ssd1306Display.display();
-  }
-  else
-  {
-    ssd1306Display.clearDisplay();
-    ssd1306Display.setTextSize(2);
-    ssd1306Display.setTextColor(WHITE);
-    ssd1306Display.setCursor(0,0);
-  
-    ssd1306Display.print("T:");
-    ssd1306Display.print(temperature);
-    ssd1306Display.println("C");
-  
-    ssd1306Display.print("H:");
-    ssd1306Display.print(humidity);
-    ssd1306Display.println("%");
-  
-    ssd1306Display.print("P:");
-    ssd1306Display.print(pressure);
-    ssd1306Display.println("hPa");
-  
-    ssd1306Display.display();
-  }
-  delay(measurementDelay);
+void printOled()
+{
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  display.setCursor(0,0);
+  display.print(measResults.dht11.temperature); display.println("C");
+  display.print(measResults.dht11.humidity); display.println("%");
+  display.print(measResults.bmp180.temperature); display.println("C");
+  display.print(measResults.bmp180.pressure/100); display.println("hPa");
+  display.print(measResults.mpl3115a2.temperature); display.println("C");
+  display.print(measResults.mpl3115a2.pressure/100); display.println("hPa");
+  display.display();
 }
