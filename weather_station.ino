@@ -1,10 +1,10 @@
 #include <SPI.h>
 #include <Wire.h>
-#include <Adafruit_BMP085.h>
-#include <Adafruit_MPL3115A2.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include "DHT.h"
+#include "DHT11Adapter.h"
+#include "BMP180Adapter.h"
+#include "MPL3115A2Adapter.h"
 
 void printSerial();
 void printOled();
@@ -26,14 +26,17 @@ constexpr uint8_t OLED_RESET = 10;
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT,
   OLED_MOSI, OLED_CLK, OLED_DC, OLED_RESET, OLED_CS);
 
-
-Adafruit_BMP085 bmp;
-Adafruit_MPL3115A2 baro = Adafruit_MPL3115A2();
-
 DHT dht(DHTPIN, DHTTYPE);
+Adafruit_MPL3115A2 mpl = Adafruit_MPL3115A2();
+Adafruit_BMP085 bmp;
 
+DHT11Adapter         dht11(dht);
+BMP180Adapter        bmp180 = BMP180Adapter(bmp);
+MPL3115A2Adapter     mpl3115a2 = MPL3115A2Adapter(mpl);
 
-struct Measurements
+namespace
+{
+struct MeasurementsTemp
 {
   struct DHT11Sensor
   {
@@ -57,26 +60,17 @@ struct Measurements
   BMP180Sensor      bmp180;
   MPL3115A2Sensor   mpl3115a2;
 };
+}
 
-Measurements measResults;
+MeasurementsTemp measResults;
 
 void setup() 
 {
   Serial.begin(9600);
-  dht.begin();
-  
-  if (!bmp.begin())
-  {
-    Serial.println("Could not find a valid BMP085 sensor, check wiring!");
-    while (1) {}
-  }
 
-  if (!baro.begin()) 
-  {
-    Serial.println("Couldnt find sensor");
-    while(1){}
-    return;
-  }
+  dht11.begin();
+  bmp180.begin();
+  mpl3115a2.begin();
 
   if(!display.begin(SSD1306_SWITCHCAPVCC)) 
   {
@@ -97,14 +91,24 @@ void loop()
 
 void takeMeasurement()
 {
-  measResults.dht11.temperature = dht.readTemperature();
-  measResults.dht11.humidity = dht.readHumidity();
+  dht11.takeMeasurement();
+  bmp180.takeMeasurement();
+  mpl3115a2.takeMeasurement();
 
-  measResults.bmp180.temperature = bmp.readTemperature();
-  measResults.bmp180.pressure = bmp.readPressure();
+  Measurements dht11Meas = dht11.getMeasurement();
+  
+  measResults.dht11.temperature = dht11Meas.measurements[0].value;
+  measResults.dht11.humidity = dht11Meas.measurements[1].value;
 
-  measResults.mpl3115a2.pressure = baro.getPressure();
-  measResults.mpl3115a2.temperature = baro.getTemperature();  
+  Measurements bmp180Meas = bmp180.getMeasurement();
+
+  measResults.bmp180.temperature = bmp180Meas.measurements[0].value;
+  measResults.bmp180.pressure = bmp180Meas.measurements[1].value;
+
+  Measurements mpl3115a2Meas = mpl3115a2.getMeasurement();
+  
+  measResults.mpl3115a2.pressure = mpl3115a2Meas.measurements[0].value;
+  measResults.mpl3115a2.temperature = mpl3115a2Meas.measurements[1].value;  
 }
 
 void printSerial()
