@@ -7,8 +7,8 @@ class DHT11Adapter : public SensorAdapter
 public:
 	DHT11Adapter(const DHT& _dht): dht(_dht), measurements(2)
 	{	
-		measurements.measurements[0] = Measurement("Temperatura", "C");
-		measurements.measurements[1] = Measurement("Wilgotnosc", "%");
+		measurements.measurements[0] = Measurement();
+		measurements.measurements[1] = Measurement();
 	}
 	
 	void takeMeasurement() override

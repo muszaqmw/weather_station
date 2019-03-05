@@ -1,6 +1,5 @@
 #pragma once
 #include "SensorAdapter.h"
-#include <Wire.h>
 #include <Adafruit_BMP085.h>
 
 class BMP180Adapter : public SensorAdapter
@@ -8,8 +7,8 @@ class BMP180Adapter : public SensorAdapter
 public:
 	BMP180Adapter(const Adafruit_BMP085& _bmp) : bmp(_bmp), measurements(2)
 	{	
-		measurements.measurements[0] = Measurement("Cisnienie", "hPa");
-		measurements.measurements[1] = Measurement("Temperatura", "C");
+		measurements.measurements[0] = Measurement();
+		measurements.measurements[1] = Measurement();
 	}
 	
 	void takeMeasurement() override

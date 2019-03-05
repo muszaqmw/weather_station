@@ -2,20 +2,7 @@
 
 struct Measurement
 {
-	Measurement() = default;
-	Measurement(String _descr, String _unit):
-		description(_descr),
-		unit(_unit)
-	{}		
-	
-	String getValueWithDescription()
-	{
-		return String(description + " " +  value + unit);
-	}
-	
-	String description = "";
-	float value = 0;
-	String unit = "";
+  float value = 0;
 };
 
 struct Measurements

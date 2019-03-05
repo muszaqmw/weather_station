@@ -1,6 +1,5 @@
 #pragma once
 #include "SensorAdapter.h"
-#include <Wire.h>
 #include <Adafruit_MPL3115A2.h>
 
 class MPL3115A2Adapter : public SensorAdapter
@@ -8,8 +7,8 @@ class MPL3115A2Adapter : public SensorAdapter
 public:
 	MPL3115A2Adapter(const Adafruit_MPL3115A2& _mpl) : mpl(_mpl), measurements(2)
 	{
-		measurements.measurements[0] = Measurement("Cisnienie", "hPa");
-		measurements.measurements[1] = Measurement("Temperatura", "C");
+		measurements.measurements[0] = Measurement();
+		measurements.measurements[1] = Measurement();
 	}
 	
 	void takeMeasurement() override
