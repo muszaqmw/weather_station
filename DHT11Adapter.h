@@ -25,6 +25,7 @@ public:
 	
 	void begin() override
 	{
+    Serial.println("DHT11 begin");
 		dht.begin();
 	}
 	

@@ -28,10 +28,10 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT,
 
 DHT dht(DHTPIN, DHTTYPE);
 Adafruit_MPL3115A2 mpl = Adafruit_MPL3115A2();
-Adafruit_BMP085 bmp;
+Adafruit_BMP085 bmp = Adafruit_BMP085();
 
 DHT11Adapter         dht11(dht);
-BMP180Adapter        bmp180 = BMP180Adapter(bmp);
+BMP180Adapter        bmp180(bmp);
 MPL3115A2Adapter     mpl3115a2 = MPL3115A2Adapter(mpl);
 
 namespace
@@ -56,9 +56,9 @@ struct MeasurementsTemp
     float pressure = 0;
   };
 
-  DHT11Sensor       dht11;
-  BMP180Sensor      bmp180;
-  MPL3115A2Sensor   mpl3115a2;
+  DHT11Sensor dht11;
+  BMP180Sensor bmp180;
+  MPL3115A2Sensor mpl3115a2;
 };
 }
 
@@ -67,7 +67,7 @@ MeasurementsTemp measResults;
 void setup() 
 {
   Serial.begin(9600);
-
+  Serial.println("Begin");
   dht11.begin();
   bmp180.begin();
   mpl3115a2.begin();
@@ -92,7 +92,7 @@ void loop()
 void takeMeasurement()
 {
   dht11.takeMeasurement();
-  bmp180.takeMeasurement();
+  //bmp180.takeMeasurement();
   mpl3115a2.takeMeasurement();
 
   Measurements dht11Meas = dht11.getMeasurement();
@@ -100,10 +100,10 @@ void takeMeasurement()
   measResults.dht11.temperature = dht11Meas.measurements[0].value;
   measResults.dht11.humidity = dht11Meas.measurements[1].value;
 
-  Measurements bmp180Meas = bmp180.getMeasurement();
+  //Measurements bmp180Meas = bmp180.getMeasurement();
 
-  measResults.bmp180.temperature = bmp180Meas.measurements[0].value;
-  measResults.bmp180.pressure = bmp180Meas.measurements[1].value;
+  //measResults.bmp180.temperature = bmp180Meas.measurements[0].value;
+  //measResults.bmp180.pressure = bmp180Meas.measurements[1].value;
 
   Measurements mpl3115a2Meas = mpl3115a2.getMeasurement();
   
@@ -116,8 +116,8 @@ void printSerial()
   Serial.print(measResults.dht11.temperature); Serial.println("C");
   Serial.print(measResults.dht11.humidity); Serial.println("%");
   
-  Serial.print(measResults.bmp180.temperature); Serial.println("C");
-  Serial.print(measResults.bmp180.pressure/100); Serial.println("hPa");
+  //Serial.print(measResults.bmp180.temperature); Serial.println("C");
+  //Serial.print(measResults.bmp180.pressure/100); Serial.println("hPa");
 
   Serial.print(measResults.mpl3115a2.temperature); Serial.println("C");
   Serial.print(measResults.mpl3115a2.pressure/100); Serial.println("hPa");
@@ -131,8 +131,8 @@ void printOled()
   display.setCursor(0,0);
   display.print(measResults.dht11.temperature); display.println("C");
   display.print(measResults.dht11.humidity); display.println("%");
-  display.print(measResults.bmp180.temperature); display.println("C");
-  display.print(measResults.bmp180.pressure/100); display.println("hPa");
+  //display.print(measResults.bmp180.temperature); display.println("C");
+  //display.print(measResults.bmp180.pressure/100); display.println("hPa");
   display.print(measResults.mpl3115a2.temperature); display.println("C");
   display.print(measResults.mpl3115a2.pressure/100); display.println("hPa");
   display.display();

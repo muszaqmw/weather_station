@@ -26,8 +26,10 @@ public:
 	
 	void begin() override
 	{
+    Serial.println("MPL3115A2 begin");
 		if(not mpl.begin())
 		{
+      Serial.println("MPL3115A2 fail");
 			while(true){}
 		}
 	}
