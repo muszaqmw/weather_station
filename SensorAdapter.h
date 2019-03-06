@@ -9,15 +9,15 @@ struct Measurements
 {
 	Measurements(int _numOfMeas): numOfMeasurements(_numOfMeas)
 	{
-		//measurements = new Measurement[numOfMeasurements];
+		measurements = new Measurement[numOfMeasurements];
 	}
 	
 	~Measurements()
 	{
-		//delete[] measurements;
+		delete[] measurements;
 	}
 	
-	Measurement measurements[2];
+	Measurement * measurements;
 	int numOfMeasurements;
 };
 

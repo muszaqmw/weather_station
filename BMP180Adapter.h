@@ -5,16 +5,13 @@
 class BMP180Adapter : public SensorAdapter
 {
 public:
-	BMP180Adapter(const Adafruit_BMP085& _bmp) : bmp(_bmp), measurements(2)
-	{	
-		measurements.measurements[0] = Measurement();
-		measurements.measurements[1] = Measurement();
-	}
+	BMP180Adapter() : measurements(2)
+	{}
 	
 	void takeMeasurement() override
 	{
-		measurements.measurements[0].value = bmp.readPressure();
-		measurements.measurements[1].value = bmp.readTemperature();
+		measurements.measurements[0].value = bmp.readTemperature();
+		measurements.measurements[1].value = bmp.readPressure();
 	}
 	
 	Measurements getMeasurement() override
@@ -25,15 +22,15 @@ public:
 	
 	void begin() override
 	{
-    Serial.println("BMP180 begin");
+    Serial.println(F("BMP180 begin"));
 		if(not bmp.begin())
 		{
-      Serial.println("BMP180 fail");
+      Serial.println(F("BMP180 fail"));
 			while(true){}
 		}
 	}
 
 private:
-	const Adafruit_BMP085& bmp;
+	Adafruit_BMP085 bmp;
 	Measurements measurements;
 };

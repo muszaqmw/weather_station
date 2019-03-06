@@ -5,11 +5,8 @@
 class MPL3115A2Adapter : public SensorAdapter
 {
 public:
-	MPL3115A2Adapter(const Adafruit_MPL3115A2& _mpl) : mpl(_mpl), measurements(2)
-	{
-		measurements.measurements[0] = Measurement();
-		measurements.measurements[1] = Measurement();
-	}
+	MPL3115A2Adapter() : measurements(2)
+	{}
 	
 	void takeMeasurement() override
 	{
@@ -25,15 +22,15 @@ public:
 	
 	void begin() override
 	{
-    Serial.println("MPL3115A2 begin");
+    Serial.println(F("MPL3115A2 begin"));
 		if(not mpl.begin())
 		{
-      Serial.println("MPL3115A2 fail");
+      Serial.println(F("MPL3115A2 fail"));
 			while(true){}
 		}
 	}
 
 private:
-	const Adafruit_MPL3115A2& mpl;
+	Adafruit_MPL3115A2 mpl;
 	Measurements measurements;
 };

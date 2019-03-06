@@ -2,13 +2,14 @@
 #include "SensorAdapter.h"
 #include "DHT.h"
 
+constexpr uint8_t dhtType = 11;
+
 class DHT11Adapter : public SensorAdapter
 {
 public:
-	DHT11Adapter(const DHT& _dht): dht(_dht), measurements(2)
-	{	
-		measurements.measurements[0] = Measurement();
-		measurements.measurements[1] = Measurement();
+	DHT11Adapter(const uint8_t dhtPin): dht(DHT(dhtPin, dhtType)), measurements(2)
+	{
+    
 	}
 	
 	void takeMeasurement() override
@@ -25,11 +26,11 @@ public:
 	
 	void begin() override
 	{
-    Serial.println("DHT11 begin");
+    Serial.println(F("DHT11 begin"));
 		dht.begin();
 	}
 	
 private:
-	const DHT& dht;
+	DHT dht;
 	Measurements measurements;
 };
