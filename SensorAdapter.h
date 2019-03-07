@@ -8,15 +8,7 @@ struct Measurement
 struct Measurements
 {
 	Measurements(int _numOfMeas): numOfMeasurements(_numOfMeas)
-	{
-		measurements = new Measurement[numOfMeasurements];
-	}
-	
-	~Measurements()
-	{
-		delete[] measurements;
-	}
-	
+	{}	
 	Measurement * measurements;
 	int numOfMeasurements;
 };

@@ -6,6 +6,7 @@
 #include <Adafruit_SSD1306.h>
 #include "DHT11Adapter.h"
 
+
 void printSerial();
 void printOled();
 void takeMeasurement();
@@ -64,17 +65,15 @@ void setup()
 {
   Serial.begin(9600);
   Serial.println(F("Begin"));
+  dht11.begin();
+  bmp180.begin();
+  mpl3115a2.begin();
+
   if(!display.begin(SSD1306_SWITCHCAPVCC)) 
   {
     Serial.println(F("SSD1306 allocation failed"));
     while(1){};
   }
-  dht11.begin();
-  bmp180.begin();
-  mpl3115a2.begin();
-
-
-
   display.display();
 }
 
@@ -92,27 +91,27 @@ void takeMeasurement()
   bmp180.takeMeasurement();
   mpl3115a2.takeMeasurement();
 
-  const Measurements& dht11Meas = dht11.getMeasurement();
+  Measurements Meas = dht11.getMeasurement();
   
-  measResults.dht11.temperature = dht11Meas.measurements[0].value;
-  measResults.dht11.humidity = dht11Meas.measurements[1].value;
+  measResults.dht11.temperature = Meas.measurements[0].value;
+  measResults.dht11.humidity = Meas.measurements[1].value;
 
-  const Measurements& bmp180Meas = bmp180.getMeasurement();
+  Meas = bmp180.getMeasurement();
 
-  measResults.bmp180.temperature = bmp180Meas.measurements[0].value;
-  measResults.bmp180.pressure = bmp180Meas.measurements[1].value;
+  measResults.bmp180.temperature = Meas.measurements[0].value;
+  measResults.bmp180.pressure = Meas.measurements[1].value;
 
-  const Measurements& mpl3115a2Meas = mpl3115a2.getMeasurement();
+  Meas = mpl3115a2.getMeasurement();
   
-  measResults.mpl3115a2.pressure = mpl3115a2Meas.measurements[0].value;
-  measResults.mpl3115a2.temperature = mpl3115a2Meas.measurements[1].value;  
+  measResults.mpl3115a2.pressure = Meas.measurements[0].value;
+  measResults.mpl3115a2.temperature = Meas.measurements[1].value;  
 }
 
 void printSerial()
 {
   Serial.print(measResults.dht11.temperature); Serial.println(F("C"));
   Serial.print(measResults.dht11.humidity); Serial.println(F("%"));
-  
+
   Serial.print(measResults.bmp180.temperature); Serial.println(F("C"));
   Serial.print(measResults.bmp180.pressure/100); Serial.println(F("hPa"));
 

@@ -8,9 +8,12 @@ class DHT11Adapter : public SensorAdapter
 {
 public:
 	DHT11Adapter(const uint8_t dhtPin): dht(DHT(dhtPin, dhtType)), measurements(2)
-	{
-    
-	}
+	{}
+
+  ~DHT11Adapter()
+  {
+    delete[] measurements.measurements;
+  }
 	
 	void takeMeasurement() override
 	{
@@ -28,6 +31,7 @@ public:
 	{
     Serial.println(F("DHT11 begin"));
 		dht.begin();
+    measurements.measurements = new Measurement[2];
 	}
 	
 private:

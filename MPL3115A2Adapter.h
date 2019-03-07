@@ -7,6 +7,11 @@ class MPL3115A2Adapter : public SensorAdapter
 public:
 	MPL3115A2Adapter() : measurements(2)
 	{}
+
+  ~MPL3115A2Adapter()
+  {
+    delete[] measurements.measurements;
+  }
 	
 	void takeMeasurement() override
 	{
@@ -28,6 +33,7 @@ public:
       Serial.println(F("MPL3115A2 fail"));
 			while(true){}
 		}
+    measurements.measurements = new Measurement[2];
 	}
 
 private:

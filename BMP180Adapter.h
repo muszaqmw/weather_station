@@ -7,6 +7,11 @@ class BMP180Adapter : public SensorAdapter
 public:
 	BMP180Adapter() : measurements(2)
 	{}
+
+  ~BMP180Adapter()
+  {
+    delete[] measurements.measurements;
+  }
 	
 	void takeMeasurement() override
 	{
@@ -28,6 +33,7 @@ public:
       Serial.println(F("BMP180 fail"));
 			while(true){}
 		}
+    measurements.measurements = new Measurement[2];
 	}
 
 private:
