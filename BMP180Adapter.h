@@ -5,7 +5,7 @@
 class BMP180Adapter : public SensorAdapter
 {
 public:
-	BMP180Adapter() : measurements(2)
+	BMP180Adapter() : measurements(1)
 	{}
 
   ~BMP180Adapter()
@@ -15,8 +15,7 @@ public:
 	
 	void takeMeasurement() override
 	{
-		measurements.measurements[0].value = bmp.readTemperature();
-		measurements.measurements[1].value = bmp.readPressure();
+		measurements.measurements[0].value = bmp.readPressure();
 	}
 	
 	Measurements getMeasurement() override
@@ -33,7 +32,8 @@ public:
       Serial.println(F("BMP180 fail"));
 			while(true){}
 		}
-    measurements.measurements = new Measurement[2];
+    measurements.measurements = new Measurement[measurements.numOfMeasurements];
+    measurements.measurements[0].unit = F("hPa");
 	}
 
 private:

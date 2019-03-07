@@ -31,7 +31,9 @@ public:
 	{
     Serial.println(F("DHT11 begin"));
 		dht.begin();
-    measurements.measurements = new Measurement[2];
+    measurements.measurements = new Measurement[measurements.numOfMeasurements];
+    measurements.measurements[0].unit = F("C");
+    measurements.measurements[1].unit = F("%");
 	}
 	
 private:

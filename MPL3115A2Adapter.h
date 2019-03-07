@@ -5,7 +5,7 @@
 class MPL3115A2Adapter : public SensorAdapter
 {
 public:
-	MPL3115A2Adapter() : measurements(2)
+	MPL3115A2Adapter() : measurements(1)
 	{}
 
   ~MPL3115A2Adapter()
@@ -16,7 +16,6 @@ public:
 	void takeMeasurement() override
 	{
 		measurements.measurements[0].value = mpl.getPressure();
-		measurements.measurements[1].value = mpl.getTemperature();
 	}
 	
 	Measurements getMeasurement() override
@@ -33,7 +32,8 @@ public:
       Serial.println(F("MPL3115A2 fail"));
 			while(true){}
 		}
-    measurements.measurements = new Measurement[2];
+    measurements.measurements = new Measurement[measurements.numOfMeasurements];
+    measurements.measurements[0].unit = F("hPa");
 	}
 
 private:

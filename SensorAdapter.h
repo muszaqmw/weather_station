@@ -3,6 +3,7 @@
 struct Measurement
 {
   float value = 0;
+  String unit;
 };
 
 struct Measurements
@@ -10,7 +11,7 @@ struct Measurements
 	Measurements(int _numOfMeas): numOfMeasurements(_numOfMeas)
 	{}	
 	Measurement * measurements;
-	int numOfMeasurements;
+	char numOfMeasurements;
 };
 
 class SensorAdapter
