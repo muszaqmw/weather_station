@@ -2,41 +2,32 @@
 #include "SensorAdapter.h"
 #include "DHT.h"
 
+namespace
+{
 constexpr uint8_t dhtType = 11;
-
+}
 class DHT11Adapter : public SensorAdapter
 {
 public:
-	DHT11Adapter(const uint8_t dhtPin): dht(DHT(dhtPin, dhtType)), measurements(2)
-	{}
-
-  ~DHT11Adapter()
-  {
-    delete[] measurements.measurements;
-  }
+	DHT11Adapter(const uint8_t dhtPin): dht(DHT(dhtPin, dhtType))
+	{
+    data[0] = 0b00000011;
+	}
 	
 	void takeMeasurement() override
 	{
-		measurements.measurements[0].value = dht.readTemperature();
-		measurements.measurements[1].value = dht.readHumidity();
-	}
-	
-	Measurements getMeasurement() override
-	{
-		Measurements meas = measurements;
-		return meas;
+    int* measData = reinterpret_cast<int*>(data + 1);
+    *measData = static_cast<int>(dht.readTemperature()*100);
+    *(measData + 1) = static_cast<int>(dht.readHumidity());
 	}
 	
 	void begin() override
 	{
     Serial.println(F("DHT11 begin"));
 		dht.begin();
-    measurements.measurements = new Measurement[measurements.numOfMeasurements];
-    measurements.measurements[0].unit = F("C");
-    measurements.measurements[1].unit = F("%");
 	}
-	
+ 
+	char data[5];
 private:
 	DHT dht;
-	Measurements measurements;
 };

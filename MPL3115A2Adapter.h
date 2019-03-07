@@ -5,23 +5,15 @@
 class MPL3115A2Adapter : public SensorAdapter
 {
 public:
-	MPL3115A2Adapter() : measurements(1)
-	{}
-
-  ~MPL3115A2Adapter()
-  {
-    delete[] measurements.measurements;
-  }
+	MPL3115A2Adapter()
+	{
+    data[0] = 0b00000100;
+	}
 	
 	void takeMeasurement() override
 	{
-		measurements.measurements[0].value = mpl.getPressure();
-	}
-	
-	Measurements getMeasurement() override
-	{
-		Measurements meas = measurements;
-		return meas;
+    int* measData = reinterpret_cast<int*>(data + 1);
+    *measData = static_cast<int>(mpl.getPressure()/10);
 	}
 	
 	void begin() override
@@ -32,11 +24,8 @@ public:
       Serial.println(F("MPL3115A2 fail"));
 			while(true){}
 		}
-    measurements.measurements = new Measurement[measurements.numOfMeasurements];
-    measurements.measurements[0].unit = F("hPa");
 	}
-
+  char data[3];
 private:
 	Adafruit_MPL3115A2 mpl;
-	Measurements measurements;
 };

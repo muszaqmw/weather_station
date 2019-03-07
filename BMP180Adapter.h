@@ -5,23 +5,15 @@
 class BMP180Adapter : public SensorAdapter
 {
 public:
-	BMP180Adapter() : measurements(1)
-	{}
-
-  ~BMP180Adapter()
-  {
-    delete[] measurements.measurements;
-  }
+	BMP180Adapter()
+	{
+    data[0] = 0b00000100;
+	}
 	
 	void takeMeasurement() override
 	{
-		measurements.measurements[0].value = bmp.readPressure();
-	}
-	
-	Measurements getMeasurement() override
-	{
-		Measurements meas = measurements;
-		return meas;
+    int* measData = reinterpret_cast<int*>(data + 1);
+    *measData = static_cast<int>(bmp.readPressure()/10);
 	}
 	
 	void begin() override
@@ -32,11 +24,8 @@ public:
       Serial.println(F("BMP180 fail"));
 			while(true){}
 		}
-    measurements.measurements = new Measurement[measurements.numOfMeasurements];
-    measurements.measurements[0].unit = F("hPa");
 	}
-
+  char data[3];
 private:
 	Adafruit_BMP085 bmp;
-	Measurements measurements;
 };
