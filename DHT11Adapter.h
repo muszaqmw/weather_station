@@ -20,6 +20,11 @@ public:
     *measData = static_cast<int>(dht.readTemperature()*100);
     *(measData + 1) = static_cast<int>(dht.readHumidity());
 	}
+
+  void* const getData()
+  {
+    return static_cast<void*>(data);
+  }
 	
 	void begin() override
 	{

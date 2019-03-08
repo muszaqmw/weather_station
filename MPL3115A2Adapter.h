@@ -15,6 +15,11 @@ public:
     int* measData = reinterpret_cast<int*>(data + 1);
     *measData = static_cast<int>(mpl.getPressure()/10);
 	}
+
+  void* const getData()
+  {
+    return static_cast<void*>(data);
+  }
 	
 	void begin() override
 	{
