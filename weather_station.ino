@@ -10,6 +10,9 @@
 void printSerial();
 void printOled();
 void takeMeasurement();
+void printTemperatureOled(int temp);
+void printHumidityOled(int humidity);
+void printPressureOled(int pressure);
 
 void printTemperature(int temp);
 void printHumidity(int humidity);
@@ -42,10 +45,7 @@ void setup()
 {
   Serial.begin(9600);
   Serial.println(F("Begin"));
-  function_tab[0] = printTemperature;
-  function_tab[1] = printHumidity;
-  function_tab[2] = printPressure;
-  
+    
   SensorTab[0] = &dht11;
   SensorTab[1] = &bmp180;
   SensorTab[2] = &mpl3115a2;
@@ -79,6 +79,9 @@ void takeMeasurement()
 
 void printSerial()
 {
+  function_tab[0] = printTemperature;
+  function_tab[1] = printHumidity;
+  function_tab[2] = printPressure;
   for(int i = 0; i < 3; i++)
   {
     char* measurementTypes = reinterpret_cast<char*>(SensorTab[i]->getData());
@@ -91,45 +94,47 @@ void printSerial()
       {
         function_tab[j](*dataPtr);
         dataPtr++;
-//        Serial.println(String("wynik if ") + (int)(mask & *measurementTypes));
-//        Serial.println(String("maska ") + (int)mask);
-//        Serial.println(String("datatype ") + (int)(*measurementTypes));
       }
       mask <<= 1;
     }
   }
-  Serial.println();
-  
-//  int* measData = reinterpret_cast<int*>(dht11.data + 1);
-//  Serial.print(*measData/100.); Serial.println(F("C"));
-//  Serial.print(*(measData + 1)); Serial.println(F("%"));
-//  measData = reinterpret_cast<int*>(bmp180.data + 1);
-//  Serial.print(*measData/10.); Serial.println(F("hPa"));
-//  measData = reinterpret_cast<int*>(mpl3115a2.data + 1);
-//  Serial.print(*measData/10.); Serial.println(F("hPa"));
 }
 
 void printOled()
 {
+  
+  function_tab[0] = printTemperatureOled;
+  function_tab[1] = printHumidityOled;
+  function_tab[2] = printPressureOled;
   static int a = 0;
   display.clearDisplay();
   display.setTextSize(1);
   display.setTextColor(WHITE);
   display.setCursor(0,0);
-  int* measData = reinterpret_cast<int*>(dht11.data + 1);
-  display.print(*measData/100.); display.println(F("C"));
-  display.print(*(measData + 1)); display.println(F("%"));
-  measData = reinterpret_cast<int*>(bmp180.data + 1);
-  display.print(*measData/10.); display.println(F("hPa"));
-  measData = reinterpret_cast<int*>(mpl3115a2.data + 1);
-  display.print(*measData/10.); display.println(F("hPa"));
+  for(int i = 0; i < 3; i++)
+  {
+    char* measurementTypes = reinterpret_cast<char*>(SensorTab[i]->getData());
+    char mask = 0b00000001;
+    int* dataPtr = reinterpret_cast<int*>(measurementTypes + 1);
+    
+    for(int j = 0; j < 8; j++)
+    {
+      if(mask & *measurementTypes)
+      {
+        function_tab[j](*dataPtr);
+        dataPtr++;
+      }
+      mask <<= 1;
+    }
+  
+  }
   display.println(a++);
   display.display();
 }
 
 void printTemperature(int temp)
 {
-  Serial.print(temp/100.); Serial.println(F("C"));
+  Serial.print(temp/100., 1); Serial.println(F("C"));
 }
 
 void printHumidity(int humidity)
@@ -139,5 +144,20 @@ void printHumidity(int humidity)
 
 void printPressure(int pressure)
 {
-  Serial.print(pressure/10.); Serial.println(F("hPa"));
+  Serial.print(pressure/10., 1); Serial.println(F("hPa"));
+}
+
+void printTemperatureOled(int temp)
+{
+  display.print(temp/100., 1); display.println(F("C"));
+}
+
+void printHumidityOled(int humidity)
+{
+  display.print(humidity); display.println(F("%"));
+}
+
+void printPressureOled(int pressure)
+{
+  display.print(pressure/10., 1); display.println(F("hPa"));
 }
