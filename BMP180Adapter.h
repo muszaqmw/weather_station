@@ -30,7 +30,8 @@ public:
 			while(true){}
 		}
 	}
-  char data[3];
+
 private:
+  char data[3];
 	Adafruit_BMP085 bmp;
 };

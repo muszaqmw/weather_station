@@ -31,8 +31,7 @@ public:
     Serial.println(F("DHT11 begin"));
 		dht.begin();
 	}
- 
-	char data[5];
 private:
+  char data[5];
 	DHT dht;
 };

@@ -39,7 +39,9 @@ MPL3115A2Adapter     mpl3115a2;
 DHT11Adapter         dht11 = DHT11Adapter(DHTPIN);
 
 SensorAdapter* SensorTab[3];
-void (*function_tab[8])(int);
+using MeasFunction = void (*)(int);
+
+MeasFunction measFunctions[8];
 
 void setup() 
 {
@@ -77,11 +79,8 @@ void takeMeasurement()
   SensorTab[2]->takeMeasurement();
 }
 
-void printSerial()
+void printMeasurements()
 {
-  function_tab[0] = printTemperature;
-  function_tab[1] = printHumidity;
-  function_tab[2] = printPressure;
   for(int i = 0; i < 3; i++)
   {
     char* measurementTypes = reinterpret_cast<char*>(SensorTab[i]->getData());
@@ -92,7 +91,7 @@ void printSerial()
     {
       if(mask & *measurementTypes)
       {
-        function_tab[j](*dataPtr);
+        measFunctions[j](*dataPtr);
         dataPtr++;
       }
       mask <<= 1;
@@ -100,34 +99,26 @@ void printSerial()
   }
 }
 
+void printSerial()
+{
+  measFunctions[0] = printTemperature;
+  measFunctions[1] = printHumidity;
+  measFunctions[2] = printPressure;
+  printMeasurements();
+}
+
 void printOled()
 {
   
-  function_tab[0] = printTemperatureOled;
-  function_tab[1] = printHumidityOled;
-  function_tab[2] = printPressureOled;
+  measFunctions[0] = printTemperatureOled;
+  measFunctions[1] = printHumidityOled;
+  measFunctions[2] = printPressureOled;
   static int a = 0;
   display.clearDisplay();
   display.setTextSize(1);
   display.setTextColor(WHITE);
   display.setCursor(0,0);
-  for(int i = 0; i < 3; i++)
-  {
-    char* measurementTypes = reinterpret_cast<char*>(SensorTab[i]->getData());
-    char mask = 0b00000001;
-    int* dataPtr = reinterpret_cast<int*>(measurementTypes + 1);
-    
-    for(int j = 0; j < 8; j++)
-    {
-      if(mask & *measurementTypes)
-      {
-        function_tab[j](*dataPtr);
-        dataPtr++;
-      }
-      mask <<= 1;
-    }
-  
-  }
+  printMeasurements();
   display.println(a++);
   display.display();
 }

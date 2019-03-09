@@ -30,7 +30,7 @@ public:
 			while(true){}
 		}
 	}
-  char data[3];
 private:
+  char data[3];
 	Adafruit_MPL3115A2 mpl;
 };
