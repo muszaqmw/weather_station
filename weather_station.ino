@@ -43,7 +43,7 @@ using MeasFunction = void (*)(int);
 
 MeasFunction measFunctions[8];
 
-MEASUREMENT measTypes[] = {TEMPERATURE, HUMIDITY, PRESSURE};
+char measTypes[] = {TEMPERATURE, HUMIDITY, PRESSURE};
 
 void setup() 
 {
@@ -85,18 +85,16 @@ void printMeasurements()
 {
   for(int i = 0; i < 3; i++)
   {
-    char* measurementTypes = reinterpret_cast<char*>(SensorTab[i]->getData());
-    char mask = 0b00000001;
+    char measurementTypes = *(reinterpret_cast<char*>(SensorTab[i]->getData()));
     int* dataPtr = reinterpret_cast<int*>(measurementTypes + 1);
     
     for(int j = 0; j < 3; j++)
     {
-      if(mask & *measurementTypes)
+      if(measTypes[j] & measurementTypes)
       {
         measFunctions[j](*dataPtr);
         dataPtr++;
       }
-      mask <<= 1;
     }
   }
 }
