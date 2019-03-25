@@ -1,5 +1,5 @@
 #pragma once
-#include "SensorAdapter.h"
+#include "SensorWrapper.h"
 #include "DHT.h"
 
 namespace

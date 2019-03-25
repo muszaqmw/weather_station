@@ -1,10 +1,10 @@
 #include <SPI.h>
 #include <Wire.h>
-#include "BMP180Adapter.h"
-#include "MPL3115A2Adapter.h"
+#include "BMP180Wrapper.h"
+#include "MPL3115A2Wrapper.h"
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include "DHT11Adapter.h"
+#include "DHT11Wrapper.h"
 
 
 void printSerial();
@@ -42,6 +42,8 @@ SensorAdapter* SensorTab[3];
 using MeasFunction = void (*)(int);
 
 MeasFunction measFunctions[8];
+
+MEASUREMENT measTypes[] = {TEMPERATURE, HUMIDITY, PRESSURE};
 
 void setup() 
 {
@@ -87,7 +89,7 @@ void printMeasurements()
     char mask = 0b00000001;
     int* dataPtr = reinterpret_cast<int*>(measurementTypes + 1);
     
-    for(int j = 0; j < 8; j++)
+    for(int j = 0; j < 3; j++)
     {
       if(mask & *measurementTypes)
       {

@@ -1,5 +1,5 @@
 #pragma once
-#include "SensorAdapter.h"
+#include "SensorWrapper.h"
 #include <Adafruit_BMP085.h>
 
 class BMP180Adapter : public SensorAdapter

@@ -1,5 +1,5 @@
 #pragma once
-#include "SensorAdapter.h"
+#include "SensorWrapper.h"
 #include <Adafruit_MPL3115A2.h>
 
 class MPL3115A2Adapter : public SensorAdapter
