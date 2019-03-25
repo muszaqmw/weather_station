@@ -18,6 +18,8 @@ void printTemperature(int temp);
 void printHumidity(int humidity);
 void printPressure(int pressure);
 
+namespace
+{
 constexpr uint8_t DHTPIN = 6;
 constexpr uint8_t DHTTYPE = DHT11;
 
@@ -31,6 +33,14 @@ constexpr uint8_t OLED_DC    = 9;
 constexpr uint8_t OLED_CS    = 8;
 constexpr uint8_t OLED_RESET = 10;
 
+constexpr char measTypes[] = {TEMPERATURE, HUMIDITY, PRESSURE};
+constexpr uint8_t numAdapters = 3;
+constexpr uint8_t numMeasurementsFunctions = 3;
+
+using MeasFunction = void (*)(int);
+MeasFunction measFunctions[3];
+}
+
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT,
   OLED_MOSI, OLED_CLK, OLED_DC, OLED_RESET, OLED_CS);
 
@@ -39,11 +49,7 @@ MPL3115A2Adapter     mpl3115a2;
 DHT11Adapter         dht11 = DHT11Adapter(DHTPIN);
 
 SensorAdapter* SensorTab[3];
-using MeasFunction = void (*)(int);
 
-MeasFunction measFunctions[8];
-
-char measTypes[] = {TEMPERATURE, HUMIDITY, PRESSURE};
 
 void setup() 
 {
@@ -83,17 +89,18 @@ void takeMeasurement()
 
 void printMeasurements()
 {
-  for(int i = 0; i < 3; i++)
+  for(uint8_t i = 0; i < numAdapters; i++)
   {
-    char measurementTypes = *(reinterpret_cast<char*>(SensorTab[i]->getData()));
-    int* dataPtr = reinterpret_cast<int*>(measurementTypes + 1);
+    auto measurementData = SensorTab[i]->getData();
+    MeasurementTypePtr measType = reinterpret_cast<MeasurementTypePtr>(measurementData);
+    MeasurementDataPtr measData = reinterpret_cast<MeasurementDataPtr>(measurementData + 1);
     
-    for(int j = 0; j < 3; j++)
+    for(uint8_t j = 0; j < numMeasurementsFunctions; j++)
     {
-      if(measTypes[j] & measurementTypes)
+      if(measTypes[j] & *measType)
       {
-        measFunctions[j](*dataPtr);
-        dataPtr++;
+        measFunctions[j](*measData);
+        measData++;
       }
     }
   }

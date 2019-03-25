@@ -16,7 +16,7 @@ public:
 	
 	void takeMeasurement() override
 	{
-    int* measData = reinterpret_cast<int*>(data + 1);
+    MeasurementDataPtr measData = reinterpret_cast<MeasurementDataPtr>(data + 1);
     *measData = static_cast<int>(dht.readTemperature()*100);
     *(measData + 1) = static_cast<int>(dht.readHumidity());
 	}

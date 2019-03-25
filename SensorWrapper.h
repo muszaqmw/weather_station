@@ -15,3 +15,6 @@ public:
   virtual void* const getData() = 0;
 	virtual ~SensorAdapter() = default;
 };
+
+using MeasurementTypePtr = char*;
+using MeasurementDataPtr = int*;
