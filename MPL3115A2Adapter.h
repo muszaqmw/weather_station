@@ -7,7 +7,7 @@ class MPL3115A2Adapter : public SensorAdapter
 public:
 	MPL3115A2Adapter()
 	{
-    data[0] = 0b00000100;
+    data[0] = PRESSURE;
 	}
 	
 	void takeMeasurement() override

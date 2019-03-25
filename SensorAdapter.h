@@ -1,5 +1,12 @@
 #pragma once
 
+enum MEASUREMENT
+{
+  TEMPERATURE = 1,
+  HUMIDITY = 2,
+  PRESSURE = 4,
+};
+
 class SensorAdapter
 {
 public:

@@ -7,7 +7,7 @@ class BMP180Adapter : public SensorAdapter
 public:
 	BMP180Adapter()
 	{
-    data[0] = 0b00000100;
+    data[0] = PRESSURE;
 	}
 	
 	void takeMeasurement() override

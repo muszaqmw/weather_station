@@ -11,7 +11,7 @@ class DHT11Adapter : public SensorAdapter
 public:
 	DHT11Adapter(const uint8_t dhtPin): dht(DHT(dhtPin, dhtType))
 	{
-    data[0] = 0b00000011;
+    data[0] = TEMPERATURE + HUMIDITY;
 	}
 	
 	void takeMeasurement() override
