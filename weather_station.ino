@@ -132,7 +132,7 @@ void printOled()
 
 void printTemperature(int temp)
 {
-  Serial.print(temp/100., 1); Serial.println(F("C"));
+  Serial.print(decompressTemperature(temp), 1); Serial.println(F("C"));
 }
 
 void printHumidity(int humidity)
@@ -142,12 +142,12 @@ void printHumidity(int humidity)
 
 void printPressure(int pressure)
 {
-  Serial.print(pressure/10., 1); Serial.println(F("hPa"));
+  Serial.print(decompressPressure(pressure), 1); Serial.println(F("hPa"));
 }
 
 void printTemperatureOled(int temp)
 {
-  display.print(temp/100., 1); display.println(F("C"));
+  display.print(decompressTemperature(temp), 1); display.println(F("C"));
 }
 
 void printHumidityOled(int humidity)
@@ -157,5 +157,5 @@ void printHumidityOled(int humidity)
 
 void printPressureOled(int pressure)
 {
-  display.print(pressure/10., 1); display.println(F("hPa"));
+  display.print(decompressPressure(pressure), 1); display.println(F("hPa"));
 }

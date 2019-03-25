@@ -18,3 +18,23 @@ public:
 
 using MeasurementTypePtr = char*;
 using MeasurementDataPtr = int*;
+
+int compressTemperature(float rawTemperature)
+{
+  return static_cast<int>(rawTemperature*100);
+}
+
+float decompressTemperature(int temperature)
+{
+  return temperature/100.;
+}
+
+int compressPressure(float rawPressure)
+{
+  return static_cast<int>(rawPressure/10);
+}
+
+float decompressPressure(int pressure)
+{
+  return pressure/10.;
+}

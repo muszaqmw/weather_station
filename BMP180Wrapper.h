@@ -13,7 +13,7 @@ public:
 	void takeMeasurement() override
 	{
     MeasurementDataPtr measData = reinterpret_cast<MeasurementDataPtr>(data + 1);
-    *measData = static_cast<int>(bmp.readPressure()/10);
+    *measData = compressPressure(bmp.readPressure());
 	}
 
   void* const getData()

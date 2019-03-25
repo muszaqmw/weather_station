@@ -13,7 +13,7 @@ public:
 	void takeMeasurement() override
 	{
     MeasurementDataPtr measData = reinterpret_cast<MeasurementDataPtr>(data + 1);
-    *measData = static_cast<int>(mpl.getPressure()/10);
+    *measData = compressPressure(mpl.getPressure());
 	}
 
   void* const getData()
