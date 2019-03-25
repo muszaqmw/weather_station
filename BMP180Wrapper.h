@@ -2,7 +2,7 @@
 #include "SensorWrapper.h"
 #include <Adafruit_BMP085.h>
 
-class BMP180Adapter : public SensorAdapter
+class BMP180Adapter : public SensorWrapper
 {
 public:
 	BMP180Adapter()

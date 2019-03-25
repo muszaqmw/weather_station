@@ -6,7 +6,7 @@ namespace
 {
 constexpr uint8_t dhtType = 11;
 }
-class DHT11Adapter : public SensorAdapter
+class DHT11Adapter : public SensorWrapper
 {
 public:
 	DHT11Adapter(const uint8_t dhtPin): dht(DHT(dhtPin, dhtType))

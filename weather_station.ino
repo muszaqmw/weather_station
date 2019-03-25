@@ -9,6 +9,10 @@
 
 void printSerial();
 void printOled();
+void printDHT11();
+void printBMP180();
+void printMPL3115A2();
+
 void takeMeasurement();
 void printTemperatureOled(int temp);
 void printHumidityOled(int humidity);
@@ -48,7 +52,7 @@ BMP180Adapter        bmp180;
 MPL3115A2Adapter     mpl3115a2;
 DHT11Adapter         dht11 = DHT11Adapter(DHTPIN);
 
-SensorAdapter* SensorTab[3];
+SensorWrapper* SensorTab[3];
 
 
 void setup() 
@@ -78,6 +82,9 @@ void loop()
   printSerial();
   printOled();
   delay(5000);
+  printDHT11();
+  printBMP180();
+  printMPL3115A2();
 }
 
 void takeMeasurement()
@@ -120,14 +127,58 @@ void printOled()
   measFunctions[0] = printTemperatureOled;
   measFunctions[1] = printHumidityOled;
   measFunctions[2] = printPressureOled;
-  static int a = 0;
   display.clearDisplay();
   display.setTextSize(1);
   display.setTextColor(WHITE);
   display.setCursor(0,0);
   printMeasurements();
-  display.println(a++);
   display.display();
+}
+
+void printDHT11()
+{
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setTextColor(WHITE);
+  display.setCursor(0,0);
+  display.println(F("DHT11"));
+  display.setTextSize(1);
+  
+  MeasurementDataPtr measData = reinterpret_cast<MeasurementDataPtr>(SensorTab[0]->getData() + 1);
+  printTemperatureOled(*(measData++));
+  printPressureOled(*measData);
+  display.display();
+  delay(5000);
+}
+
+void printBMP180()
+{
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setTextColor(WHITE);
+  display.setCursor(0,0);
+  display.println(F("BMP180"));
+  display.setTextSize(1);
+  
+  MeasurementDataPtr measData = reinterpret_cast<MeasurementDataPtr>(SensorTab[1]->getData() + 1);
+  printPressureOled(*measData);
+  display.display();
+  delay(5000);
+}
+
+void printMPL3115A2()
+{
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setTextColor(WHITE);
+  display.setCursor(0,0);
+  display.println(F("MPL3115A2"));
+  display.setTextSize(1);
+  
+  MeasurementDataPtr measData = reinterpret_cast<MeasurementDataPtr>(SensorTab[2]->getData() + 1);
+  printPressureOled(*measData);
+  display.display();
+  delay(5000);
 }
 
 void printTemperature(int temp)

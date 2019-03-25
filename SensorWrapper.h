@@ -7,13 +7,13 @@ enum MEASUREMENT
   PRESSURE = 4,
 };
 
-class SensorAdapter
+class SensorWrapper
 {
 public:
 	virtual void takeMeasurement() = 0;
 	virtual void begin() = 0;
   virtual void* const getData() = 0;
-	virtual ~SensorAdapter() = default;
+	virtual ~SensorWrapper() = default;
 };
 
 using MeasurementTypePtr = char*;
