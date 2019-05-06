@@ -1,11 +1,13 @@
 #pragma once
 #include "SensorWrapper.h"
-#include <Adafruit_BMP085.h>
+#include <SPI.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BMP280.h>
 
-class BMP180Wrapper : public SensorWrapper
+class BMP280Wrapper : public SensorWrapper
 {
 public:
-	BMP180Wrapper()
+	BMP280Wrapper()
 	{
     data[0] = PRESSURE;
 	}
@@ -23,15 +25,15 @@ public:
 	
 	void begin() override
 	{
-    Serial.println(F("BMP180 begin"));
-		if(not bmp.begin())
+    Serial.println(F("BMP280 begin"));
+		if(not bmp.begin(0x76))
 		{
-      Serial.println(F("BMP180 fail"));
+      Serial.println(F("BMP280 fail"));
 			while(true){}
 		}
 	}
 
 private:
   char data[3];
-	Adafruit_BMP085 bmp;
+	Adafruit_BMP280 bmp;
 };

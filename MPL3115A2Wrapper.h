@@ -2,10 +2,10 @@
 #include "SensorWrapper.h"
 #include <Adafruit_MPL3115A2.h>
 
-class MPL3115A2Adapter : public SensorWrapper
+class MPL3115A2Wrapper : public SensorWrapper
 {
 public:
-	MPL3115A2Adapter()
+	MPL3115A2Wrapper()
 	{
     data[0] = PRESSURE;
 	}

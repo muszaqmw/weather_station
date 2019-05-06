@@ -1,6 +1,7 @@
 #include <SPI.h>
 #include <Wire.h>
 #include "BMP180Wrapper.h"
+#include "BMP280Wrapper.h"
 #include "MPL3115A2Wrapper.h"
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -10,7 +11,9 @@
 void printSerial();
 void printOled();
 void printDHT11();
+void printDHT22();
 void printBMP180();
+void printBMP280();
 void printMPL3115A2();
 
 void takeMeasurement();
@@ -24,8 +27,11 @@ void printPressure(int pressure);
 
 namespace
 {
-constexpr uint8_t DHTPIN = 6;
-constexpr uint8_t DHTTYPE = DHT11;
+constexpr uint8_t DHT11PIN = 6;
+constexpr uint8_t DHT22PIN = 2;
+
+constexpr uint8_t DHT11TYPE = 11;
+constexpr uint8_t DHT22TYPE = 22;
 
 constexpr uint8_t SCREEN_WIDTH = 128; // OLED display width, in pixels
 constexpr uint8_t SCREEN_HEIGHT = 64; // OLED display height, in pixels
@@ -38,7 +44,7 @@ constexpr uint8_t OLED_CS    = 8;
 constexpr uint8_t OLED_RESET = 10;
 
 constexpr char measTypes[] = {TEMPERATURE, HUMIDITY, PRESSURE};
-constexpr uint8_t numAdapters = 3;
+constexpr uint8_t numAdapters = 5;
 constexpr uint8_t numMeasurementsFunctions = 3;
 
 using MeasFunction = void (*)(int);
@@ -48,11 +54,13 @@ MeasFunction measFunctions[3];
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT,
   OLED_MOSI, OLED_CLK, OLED_DC, OLED_RESET, OLED_CS);
 
-BMP180Adapter        bmp180;
-MPL3115A2Adapter     mpl3115a2;
-DHT11Adapter         dht11 = DHT11Adapter(DHTPIN);
+BMP180Wrapper        bmp180;
+BMP280Wrapper        bmp280;
+MPL3115A2Wrapper     mpl3115a2;
+DHTWrapper           dht11 = DHTWrapper(DHT11PIN, DHT11TYPE);
+DHTWrapper           dht22 = DHTWrapper(DHT22PIN, DHT22TYPE);
 
-SensorWrapper* SensorTab[3];
+SensorWrapper* SensorTab[numAdapters];
 
 
 void setup() 
@@ -61,12 +69,16 @@ void setup()
   Serial.println(F("Begin"));
     
   SensorTab[0] = &dht11;
-  SensorTab[1] = &bmp180;
-  SensorTab[2] = &mpl3115a2;
+  SensorTab[1] = &dht22;
+  SensorTab[2] = &bmp180;
+  SensorTab[3] = &bmp280;
+  SensorTab[4] = &mpl3115a2;
   
   SensorTab[0]->begin();
   SensorTab[1]->begin();
   SensorTab[2]->begin();
+  SensorTab[3]->begin();
+  SensorTab[4]->begin();
 
   if(!display.begin(SSD1306_SWITCHCAPVCC)) 
   {
@@ -83,7 +95,9 @@ void loop()
   printOled();
   delay(5000);
   printDHT11();
+  printDHT22();
   printBMP180();
+  printBMP280();
   printMPL3115A2();
 }
 
@@ -92,6 +106,8 @@ void takeMeasurement()
   SensorTab[0]->takeMeasurement();
   SensorTab[1]->takeMeasurement();
   SensorTab[2]->takeMeasurement();
+  SensorTab[3]->takeMeasurement();
+  SensorTab[4]->takeMeasurement();
 }
 
 void printMeasurements()
@@ -146,7 +162,23 @@ void printDHT11()
   
   MeasurementDataPtr measData = reinterpret_cast<MeasurementDataPtr>(SensorTab[0]->getData() + 1);
   printTemperatureOled(*(measData++));
-  printPressureOled(*measData);
+  printHumidityOled(*measData);
+  display.display();
+  delay(5000);
+}
+
+void printDHT22()
+{
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setTextColor(WHITE);
+  display.setCursor(0,0);
+  display.println(F("DHT22"));
+  display.setTextSize(1);
+  
+  MeasurementDataPtr measData = reinterpret_cast<MeasurementDataPtr>(SensorTab[1]->getData() + 1);
+  printTemperatureOled(*(measData++));
+  printHumidityOled(*measData);
   display.display();
   delay(5000);
 }
@@ -160,7 +192,22 @@ void printBMP180()
   display.println(F("BMP180"));
   display.setTextSize(1);
   
-  MeasurementDataPtr measData = reinterpret_cast<MeasurementDataPtr>(SensorTab[1]->getData() + 1);
+  MeasurementDataPtr measData = reinterpret_cast<MeasurementDataPtr>(SensorTab[2]->getData() + 1);
+  printPressureOled(*measData);
+  display.display();
+  delay(5000);
+}
+
+void printBMP280()
+{
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setTextColor(WHITE);
+  display.setCursor(0,0);
+  display.println(F("BMP280"));
+  display.setTextSize(1);
+  
+  MeasurementDataPtr measData = reinterpret_cast<MeasurementDataPtr>(SensorTab[3]->getData() + 1);
   printPressureOled(*measData);
   display.display();
   delay(5000);
@@ -175,7 +222,7 @@ void printMPL3115A2()
   display.println(F("MPL3115A2"));
   display.setTextSize(1);
   
-  MeasurementDataPtr measData = reinterpret_cast<MeasurementDataPtr>(SensorTab[2]->getData() + 1);
+  MeasurementDataPtr measData = reinterpret_cast<MeasurementDataPtr>(SensorTab[4]->getData() + 1);
   printPressureOled(*measData);
   display.display();
   delay(5000);

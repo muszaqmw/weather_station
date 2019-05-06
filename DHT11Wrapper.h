@@ -2,14 +2,10 @@
 #include "SensorWrapper.h"
 #include "DHT.h"
 
-namespace
-{
-constexpr uint8_t dhtType = 11;
-}
-class DHT11Adapter : public SensorWrapper
+class DHTWrapper : public SensorWrapper
 {
 public:
-	DHT11Adapter(const uint8_t dhtPin): dht(DHT(dhtPin, dhtType))
+	DHTWrapper(const uint8_t dhtPin, const uint8_t dhtType): dht(DHT(dhtPin, dhtType))
 	{
     data[0] = TEMPERATURE + HUMIDITY;
 	}
