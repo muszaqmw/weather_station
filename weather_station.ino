@@ -208,6 +208,7 @@ void printBMP280()
   display.setTextSize(1);
   
   MeasurementDataPtr measData = reinterpret_cast<MeasurementDataPtr>(SensorTab[3]->getData() + 1);
+  printTemperatureOled(*(measData++));
   printPressureOled(*measData);
   display.display();
   delay(5000);

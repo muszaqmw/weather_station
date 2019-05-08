@@ -9,12 +9,13 @@ class BMP280Wrapper : public SensorWrapper
 public:
 	BMP280Wrapper()
 	{
-    data[0] = PRESSURE;
+    data[0] = PRESSURE + TEMPERATURE;
 	}
 	
 	void takeMeasurement() override
 	{
     MeasurementDataPtr measData = reinterpret_cast<MeasurementDataPtr>(data + 1);
+    *(measData++) = compressTemperature(bmp.readTemperature());
     *measData = compressPressure(bmp.readPressure());
 	}
 
@@ -34,6 +35,6 @@ public:
 	}
 
 private:
-  char data[3];
+  char data[5];
 	Adafruit_BMP280 bmp;
 };
