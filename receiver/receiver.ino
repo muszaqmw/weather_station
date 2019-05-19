@@ -3,33 +3,45 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
-constexpr uint8_t NUM_OF_SCREEN = 3;
-volatile uint8_t screenNumber = 0;
+#include <DS3231.h>
 
-constexpr uint8_t interruptPin = 2;
-constexpr uint8_t firstButton = 7;
-constexpr uint8_t secondButton = 6;
-constexpr uint8_t thirdButton = 5;
+constexpr byte NUM_OF_SCREEN = 3;
+byte screenNumber = 0;
 
-constexpr uint8_t SCREEN_WIDTH = 128;
-constexpr uint8_t SCREEN_HEIGHT = 64;
+constexpr byte interruptPin = 2;
+constexpr byte firstButton = 7;
+constexpr byte secondButton = 6;
+constexpr byte thirdButton = 5;
 
-constexpr uint8_t OLED_MOSI = 11;
-constexpr uint8_t OLED_CLK  = 12;
-constexpr uint8_t OLED_DC   = 9;
-constexpr uint8_t OLED_CS   = 8;
-constexpr uint8_t OLED_RESET = 10;
+constexpr byte SCREEN_WIDTH = 128;
+constexpr byte SCREEN_HEIGHT = 64;
+
+constexpr byte OLED_MOSI = 11;
+constexpr byte OLED_CLK  = 12;
+constexpr byte OLED_DC   = 9;
+constexpr byte OLED_CS   = 8;
+constexpr byte OLED_RESET = 10;
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT,
   OLED_MOSI, OLED_CLK, OLED_DC, OLED_RESET, OLED_CS);
 
-volatile uint8_t firstButtonState = 1;
-volatile uint8_t secondButtonState = 1;
-volatile uint8_t thirdButtonState = 1;
+volatile byte firstButtonState = 1;
+volatile byte secondButtonState = 1;
+volatile byte thirdButtonState = 1;
 unsigned long time = 0;
 
 bool shouldRefreshDisplay = true;
 
+
+//new
+DS3231 Clock;
+bool Century = false;
+bool PM;
+bool h12;
+
+byte year, month, date, DoW, hour, minute, second;
+unsigned long refreshTime = 0;
+//end_new
 
 void incrementCounter()
 {
@@ -50,6 +62,15 @@ void setup()
   {
     while(true);
   }
+  Wire.begin();
+//  Clock.setSecond(10);//Set the second 
+//  Clock.setMinute(20);//Set the minute 
+//  Clock.setHour(18);  //Set the hour 
+//  Clock.setDoW(7);    //Set the day of the week
+//  Clock.setDate(19);  //Set the date of the month
+//  Clock.setMonth(5);  //Set the month of the year
+//  Clock.setYear(19);  //Set the year (Last two digits of the year)
+  
 
   pinMode(interruptPin, INPUT_PULLUP);
   pinMode(firstButton, INPUT_PULLUP);
@@ -57,6 +78,38 @@ void setup()
   pinMode(thirdButton, INPUT_PULLUP);
   
   attachInterrupt(digitalPinToInterrupt(interruptPin), incrementCounter, FALLING);
+}
+
+void readDS3231()
+{
+  second=Clock.getSecond();
+  minute=Clock.getMinute();
+  hour=Clock.getHour(h12, PM);
+  date=Clock.getDate();
+  month=Clock.getMonth(Century);
+  year=Clock.getYear();  
+}
+
+void displayTime()
+{ 
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  display.setCursor(0, 0);
+  display.print("20");
+  display.print(year);
+  display.print('-');
+  display.print(month);
+  display.print('-');
+  display.print(date);
+  display.print('\n');
+  display.print(hour);
+  display.print(':');
+  display.print(minute);
+  display.print(':');
+  display.print(second);
+  display.print('\n');
+  display.display();
 }
 
 void changeCounter()
@@ -98,10 +151,8 @@ void refreshDisplay()
   {
     case 0: 
     display.println(F("Pierwszy")); break;
-
     case 1:
     display.println(F("Drugi")); break;
-
     case 2:
     display.println(F("Trzeci")); break;
 
@@ -119,5 +170,11 @@ void loop()
     refreshDisplay();
     shouldRefreshDisplay = false;
   }
-  
+
+  if(millis() - refreshTime > 1000UL && screenNumber == 1)
+  {
+    readDS3231();
+    displayTime();
+    refreshTime = millis();
+  }
 }
