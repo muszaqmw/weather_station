@@ -2,14 +2,14 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-
-#include <DS3231.h>
+#include <DS3232RTC.h>
 
 constexpr byte NUM_OF_SCREEN = 3;
 byte screenNumber = 1;
 byte currentSettingValue = 0;
 
-constexpr byte interruptPin = 2;
+constexpr byte buttonInterruptPin = 2;
+constexpr byte rtcInterruptPin = 3;
 constexpr byte firstButton = 7;
 constexpr byte secondButton = 6;
 constexpr byte thirdButton = 5;
@@ -36,12 +36,11 @@ bool shouldRefreshDisplay = true;
 
 
 //new
-DS3231 Clock;
 bool Century = false;
 bool PM;
 bool h12;
 
-byte year, month, date, DoW, hour, minute, second;
+time_t rtcTime;
 unsigned long refreshTime = 0;
 //end_new
 
@@ -64,7 +63,6 @@ void setup()
   {
     while(true);
   }
-  Wire.begin();
 //  Clock.setSecond(0);//Set the second 
 //  Clock.setMinute(20);//Set the minute 
 //  Clock.setHour(19);  //Set the hour 
@@ -73,40 +71,65 @@ void setup()
 //  Clock.setMonth(5);  //Set the month of the year
 //  Clock.setYear(19);  //Set the year (Last two digits of the year)
 
-  pinMode(interruptPin, INPUT_PULLUP);
+  pinMode(buttonInterruptPin, INPUT_PULLUP);
+  pinMode(rtcInterruptPin, INPUT_PULLUP);
   pinMode(firstButton, INPUT_PULLUP);
   pinMode(secondButton, INPUT_PULLUP);
   pinMode(thirdButton, INPUT_PULLUP);
+
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, HIGH);
+
+  RTC.setAlarm(ALM1_MATCH_DATE, 0, 0, 0, 1);
+  RTC.setAlarm(ALM2_MATCH_DATE, 0, 0, 0, 1);
+  RTC.alarm(ALARM_1);
+  RTC.alarm(ALARM_2);
+  RTC.alarmInterrupt(ALARM_1, false);
+  RTC.alarmInterrupt(ALARM_2, false);
+  RTC.squareWave(SQWAVE_NONE);
+
+
+  RTC.setAlarm(ALM2_EVERY_MINUTE, 0, 0, 0, 0);// Setting alarm 1
+  RTC.alarm(ALARM_2);
+  // configure the INT/SQW pin for "interrupt" operation (disable square wave output)
+  RTC.squareWave(SQWAVE_NONE);
+  // enable interrupt output for Alarm 2
+  RTC.alarmInterrupt(ALARM_2, true);
   
-  attachInterrupt(digitalPinToInterrupt(interruptPin), pushedButton, FALLING);
+  attachInterrupt(digitalPinToInterrupt(buttonInterruptPin), pushedButton, FALLING);
 }
 
 void getTime()
 {
-  second = Clock.getSecond();//Set the second 
-  minute = Clock.getMinute();//Set the minute 
-  hour = Clock.getHour(h12, PM);  //Set the hour 
-  DoW = Clock.getDoW();    //Set the day of the week
-  date = Clock.getDate();  //Set the date of the month
-  month = Clock.getMonth(Century);  //Set the month of the year
-  year = Clock.getYear();  //Set the year (Last two digits of the year)
+  rtcTime = RTC.get();
 }
 
-void setClock()
+//void setClock()
+//{
+//  Clock.setSecond(second);//Set the second 
+//  Clock.setMinute(minute);//Set the minute 
+//  Clock.setHour(hour);  //Set the hour 
+//  Clock.setDoW(DoW);    //Set the day of the week
+//  Clock.setDate(date);  //Set the date of the month
+//  Clock.setMonth(month);  //Set the month of the year
+//  Clock.setYear(year);  //Set the year (Last two digits of the year)
+//}
+
+String alignDigit(const byte & number)
 {
-  Clock.setSecond(second);//Set the second 
-  Clock.setMinute(minute);//Set the minute 
-  Clock.setHour(hour);  //Set the hour 
-  Clock.setDoW(DoW);    //Set the day of the week
-  Clock.setDate(date);  //Set the date of the month
-  Clock.setMonth(month);  //Set the month of the year
-  Clock.setYear(year);  //Set the year (Last two digits of the year)
+  String textValue = String(number);
+  
+  if(number < 10)
+  {
+     return String("0" + textValue);
+  }
+  return textValue;
 }
 
 void displayTime()
 {
-  display.print("20");display.print(year);display.print(F("-"));display.print(month); display.print(F("-"));display.println(date);
-  display.print(hour);display.print(F(":"));display.print(minute);display.print(F(":"));display.println(second);
+  display.print(year(rtcTime));display.print(F("-"));display.print(alignDigit(month(rtcTime))); display.print(F("-"));display.println(alignDigit(day(rtcTime)));
+  display.print(alignDigit(hour(rtcTime)));display.print(F(":"));display.print(alignDigit(minute(rtcTime)));display.print(F(":"));display.println(alignDigit(second(rtcTime)));
   if(isSettingMode)
   {
     display.print(currentSettingValue);
@@ -160,32 +183,31 @@ void handleButton()
   {
     if(isSecondButtonPushed)
     {
-      if(currentSettingValue == 6)
+      if(currentSettingValue == 5)
       {
         currentSettingValue = 0;
         isSettingMode = false;
       }
       else
       {
-        setClock();
+        //setClock();
         ++currentSettingValue;
-      }
-      
+      }      
     }
     switch(currentSettingValue)
     {
-      case 0:
-      changeValue(year); break;
-      case 1:
-      changeValue(month); break;
-      case 2:
-      changeValue(date); break;
-      case 3:
-      changeValue(hour); break;
-      case 4:
-      changeValue(minute); break;
-      case 5:
-      changeValue(second); break;
+//      case 0:
+//      changeValue(year); break;
+//      case 1:
+//      changeValue(month); break;
+//      case 2:
+//      changeValue(date); break;
+//      case 3:
+//      changeValue(hour); break;
+//      case 4:
+//      changeValue(minute); break;
+//      case 5:
+//      changeValue(second); break;
     }
   }
 }
@@ -212,14 +234,14 @@ void refreshDisplay()
 
 void loop() 
 {
-  if(shouldRefreshDisplay)
+  //if(shouldRefreshDisplay)
   {
-    handleButton();
-    refreshDisplay();
-    shouldRefreshDisplay = false;
+    //handleButton();
+    //refreshDisplay();
+    //shouldRefreshDisplay = false;
   }
 
-  if(millis() - refreshTime > 1000UL && screenNumber == 1 && not isSettingMode)
+  if(RTC.alarm(ALARM_1) && screenNumber == 1 && not isSettingMode)
   {
     getTime();
     refreshDisplay();
