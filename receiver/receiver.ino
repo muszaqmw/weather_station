@@ -2,6 +2,7 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <avr/sleep.h>
 #include <DS3232RTC.h>
 
 constexpr byte NUM_OF_SCREEN = 3;
@@ -56,6 +57,12 @@ void pushedButton()
   }
 }
 
+void wakeUp()
+{
+  sleep_disable();//Disable sleep mode
+  detachInterrupt(digitalPinToInterrupt(rtcInterruptPin));
+}
+
 void setup() 
 {
   Serial.begin(9600);
@@ -89,12 +96,12 @@ void setup()
   RTC.squareWave(SQWAVE_NONE);
 
 
-  RTC.setAlarm(ALM2_EVERY_MINUTE, 0, 0, 0, 0);// Setting alarm 1
-  RTC.alarm(ALARM_2);
+  RTC.setAlarm(ALM1_EVERY_SECOND, 0, 0, 0, 0);// Setting alarm 1
+  RTC.alarm(ALARM_1);
   // configure the INT/SQW pin for "interrupt" operation (disable square wave output)
   RTC.squareWave(SQWAVE_NONE);
   // enable interrupt output for Alarm 2
-  RTC.alarmInterrupt(ALARM_2, true);
+  RTC.alarmInterrupt(ALARM_1, true);
   
   attachInterrupt(digitalPinToInterrupt(buttonInterruptPin), pushedButton, FALLING);
 }
@@ -129,7 +136,7 @@ String alignDigit(const byte & number)
 void displayTime()
 {
   display.print(year(rtcTime));display.print(F("-"));display.print(alignDigit(month(rtcTime))); display.print(F("-"));display.println(alignDigit(day(rtcTime)));
-  display.print(alignDigit(hour(rtcTime)));display.print(F(":"));display.print(alignDigit(minute(rtcTime)));display.print(F(":"));display.println(alignDigit(second(rtcTime)));
+  display.print(alignDigit(hour(rtcTime)));display.print(F(":"));display.println(alignDigit(minute(rtcTime)));
   if(isSettingMode)
   {
     display.print(currentSettingValue);
@@ -232,6 +239,19 @@ void refreshDisplay()
   display.display();
 }
 
+void Going_To_Sleep()
+{
+    sleep_enable();//Enabling sleep mode
+    attachInterrupt(digitalPinToInterrupt(rtcInterruptPin), wakeUp, LOW);
+    set_sleep_mode(SLEEP_MODE_PWR_DOWN);//Setting the sleep mode, in our case full sleep
+    digitalWrite(LED_BUILTIN, LOW);//turning LED off
+   
+    delay(100); //wait a second to allow the led to be turned off before going to sleep
+    sleep_cpu();//activating sleep mode
+    
+    digitalWrite(LED_BUILTIN, HIGH);//turning LED on
+}
+
 void loop() 
 {
   //if(shouldRefreshDisplay)
@@ -240,6 +260,8 @@ void loop()
     //refreshDisplay();
     //shouldRefreshDisplay = false;
   }
+
+  Going_To_Sleep();
 
   if(RTC.alarm(ALARM_1) && screenNumber == 1 && not isSettingMode)
   {
