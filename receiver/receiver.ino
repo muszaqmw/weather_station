@@ -34,6 +34,8 @@ bool isSettingMode = false;
 unsigned long time = 0;
 
 bool shouldRefreshDisplay = true;
+uint16_t YEAR;
+byte MONTH, DAY, HOUR, MINUTE, SECOND;
 
 
 //new
@@ -63,6 +65,28 @@ void wakeUp()
   detachInterrupt(digitalPinToInterrupt(rtcInterruptPin));
 }
 
+//time_t compileTime()
+//{
+//    const time_t FUDGE(10);    //fudge factor to allow for upload time, etc. (seconds, YMMV)
+//    const char *compDate = __DATE__, *compTime = __TIME__, *months = "JanFebMarAprMayJunJulAugSepOctNovDec";
+//    char compMon[3], *m;
+//
+//    strncpy(compMon, compDate, 3);
+//    compMon[3] = '\0';
+//    m = strstr(months, compMon);
+//
+//    tmElements_t tm;
+//    tm.Month = ((m - months) / 3 + 1);
+//    tm.Day = atoi(compDate + 4);
+//    tm.Year = atoi(compDate + 7) - 1970;
+//    tm.Hour = atoi(compTime);
+//    tm.Minute = atoi(compTime + 3);
+//    tm.Second = atoi(compTime + 6);
+//
+//    time_t t = makeTime(tm);
+//    return t + FUDGE;        //add fudge factor to allow for compile time
+//}
+
 void setup() 
 {
   Serial.begin(9600);
@@ -87,6 +111,8 @@ void setup()
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
 
+  //RTC.set(compileTime());
+
   RTC.setAlarm(ALM1_MATCH_DATE, 0, 0, 0, 1);
   RTC.setAlarm(ALM2_MATCH_DATE, 0, 0, 0, 1);
   RTC.alarm(ALARM_1);
@@ -108,19 +134,14 @@ void setup()
 
 void getTime()
 {
-  rtcTime = RTC.get();
+  time = RTC.get();
+  YEAR = year(time);
+  MONTH = month(time);
+  DAY = day(time);
+  HOUR = hour(time);
+  MINUTE = minute(time);
+  SECOND = second(time);  
 }
-
-//void setClock()
-//{
-//  Clock.setSecond(second);//Set the second 
-//  Clock.setMinute(minute);//Set the minute 
-//  Clock.setHour(hour);  //Set the hour 
-//  Clock.setDoW(DoW);    //Set the day of the week
-//  Clock.setDate(date);  //Set the date of the month
-//  Clock.setMonth(month);  //Set the month of the year
-//  Clock.setYear(year);  //Set the year (Last two digits of the year)
-//}
 
 String alignDigit(const byte & number)
 {
@@ -135,15 +156,16 @@ String alignDigit(const byte & number)
 
 void displayTime()
 {
-  display.print(year(rtcTime));display.print(F("-"));display.print(alignDigit(month(rtcTime))); display.print(F("-"));display.println(alignDigit(day(rtcTime)));
-  display.print(alignDigit(hour(rtcTime)));display.print(F(":"));display.println(alignDigit(minute(rtcTime)));
+  display.print(YEAR);display.print(F("-"));display.print(alignDigit(MONTH)); display.print(F("-"));display.println(alignDigit(DAY));
+  display.print(alignDigit(HOUR));display.print(F(":"));display.print(alignDigit(MINUTE));display.print(F(":"));display.println(alignDigit(SECOND));
   if(isSettingMode)
   {
     display.print(currentSettingValue);
   }
 }
 
-void changeValue(byte& value)
+template <typename T>
+void changeValue(T& value)
 {
   if(isFirstButtonPushed)
   {
@@ -153,6 +175,28 @@ void changeValue(byte& value)
   {
     ++value;
   }
+}
+
+void setClock()
+{
+  tmElements_t newTime;
+
+  if (YEAR >= 1000)
+  {
+    newTime.Year = CalendarYrToTm(YEAR);
+  }
+  else
+  {
+    newTime.Year = y2kYearToTm(YEAR);
+  }
+  newTime.Year = YEAR - 1970;
+  newTime.Month = MONTH;
+  newTime.Day = DAY;
+  newTime.Hour = HOUR;
+  newTime.Minute = MINUTE;
+  newTime.Second = SECOND;
+
+  RTC.set(makeTime(newTime));
 }
 
 void handleButton()
@@ -190,31 +234,31 @@ void handleButton()
   {
     if(isSecondButtonPushed)
     {
-      if(currentSettingValue == 5)
+      if(currentSettingValue == 6)
       {
         currentSettingValue = 0;
         isSettingMode = false;
       }
       else
       {
-        //setClock();
+        setClock();
         ++currentSettingValue;
       }      
     }
     switch(currentSettingValue)
     {
-//      case 0:
-//      changeValue(year); break;
-//      case 1:
-//      changeValue(month); break;
-//      case 2:
-//      changeValue(date); break;
-//      case 3:
-//      changeValue(hour); break;
-//      case 4:
-//      changeValue(minute); break;
-//      case 5:
-//      changeValue(second); break;
+      case 0:
+      changeValue(YEAR); break;
+      case 1:
+      changeValue(MONTH); break;
+      case 2:
+      changeValue(DAY); break;
+      case 3:
+      changeValue(HOUR); break;
+      case 4:
+      changeValue(MINUTE); break;
+      case 5:
+      changeValue(SECOND); break;
     }
   }
 }
@@ -239,7 +283,7 @@ void refreshDisplay()
   display.display();
 }
 
-void Going_To_Sleep()
+void goingToSleep()
 {
     sleep_enable();//Enabling sleep mode
     attachInterrupt(digitalPinToInterrupt(rtcInterruptPin), wakeUp, LOW);
@@ -254,19 +298,17 @@ void Going_To_Sleep()
 
 void loop() 
 {
-  //if(shouldRefreshDisplay)
-  {
-    //handleButton();
-    //refreshDisplay();
-    //shouldRefreshDisplay = false;
-  }
-
-  Going_To_Sleep();
-
   if(RTC.alarm(ALARM_1) && screenNumber == 1 && not isSettingMode)
   {
     getTime();
     refreshDisplay();
     refreshTime = millis();
+    goingToSleep();
+  }
+  else if(shouldRefreshDisplay)
+  {
+    handleButton();
+    refreshDisplay();
+    shouldRefreshDisplay = false;
   }
 }
