@@ -6,7 +6,8 @@
 #include <DS3231.h>
 
 constexpr byte NUM_OF_SCREEN = 3;
-byte screenNumber = 0;
+byte screenNumber = 1;
+byte currentSettingValue = 0;
 
 constexpr byte interruptPin = 2;
 constexpr byte firstButton = 7;
@@ -25,9 +26,10 @@ constexpr byte OLED_RESET = 10;
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT,
   OLED_MOSI, OLED_CLK, OLED_DC, OLED_RESET, OLED_CS);
 
-volatile byte firstButtonState = 1;
-volatile byte secondButtonState = 1;
-volatile byte thirdButtonState = 1;
+volatile bool isFirstButtonPushed = 0;
+volatile bool isSecondButtonPushed = 0;
+volatile bool isThirdButtonPushed = 0;
+bool isSettingMode = false;
 unsigned long time = 0;
 
 bool shouldRefreshDisplay = true;
@@ -43,13 +45,13 @@ byte year, month, date, DoW, hour, minute, second;
 unsigned long refreshTime = 0;
 //end_new
 
-void incrementCounter()
+void pushedButton()
 {
   if(millis() - time > 200UL)
   {    
-    firstButtonState = digitalRead(firstButton);
-    secondButtonState = digitalRead(secondButton);
-    thirdButtonState = digitalRead(thirdButton);
+    isFirstButtonPushed = not digitalRead(firstButton);
+    isSecondButtonPushed = not digitalRead(secondButton);
+    isThirdButtonPushed = not digitalRead(thirdButton);
     shouldRefreshDisplay = true;
     time = millis();
   }
@@ -63,78 +65,127 @@ void setup()
     while(true);
   }
   Wire.begin();
-//  Clock.setSecond(10);//Set the second 
+//  Clock.setSecond(0);//Set the second 
 //  Clock.setMinute(20);//Set the minute 
-//  Clock.setHour(18);  //Set the hour 
+//  Clock.setHour(19);  //Set the hour 
 //  Clock.setDoW(7);    //Set the day of the week
-//  Clock.setDate(19);  //Set the date of the month
+//  Clock.setDate(26);  //Set the date of the month
 //  Clock.setMonth(5);  //Set the month of the year
 //  Clock.setYear(19);  //Set the year (Last two digits of the year)
-  
 
   pinMode(interruptPin, INPUT_PULLUP);
   pinMode(firstButton, INPUT_PULLUP);
   pinMode(secondButton, INPUT_PULLUP);
   pinMode(thirdButton, INPUT_PULLUP);
   
-  attachInterrupt(digitalPinToInterrupt(interruptPin), incrementCounter, FALLING);
+  attachInterrupt(digitalPinToInterrupt(interruptPin), pushedButton, FALLING);
 }
 
-void readDS3231()
+void getTime()
 {
-  second=Clock.getSecond();
-  minute=Clock.getMinute();
-  hour=Clock.getHour(h12, PM);
-  date=Clock.getDate();
-  month=Clock.getMonth(Century);
-  year=Clock.getYear();  
+  second = Clock.getSecond();//Set the second 
+  minute = Clock.getMinute();//Set the minute 
+  hour = Clock.getHour(h12, PM);  //Set the hour 
+  DoW = Clock.getDoW();    //Set the day of the week
+  date = Clock.getDate();  //Set the date of the month
+  month = Clock.getMonth(Century);  //Set the month of the year
+  year = Clock.getYear();  //Set the year (Last two digits of the year)
+}
+
+void setClock()
+{
+  Clock.setSecond(second);//Set the second 
+  Clock.setMinute(minute);//Set the minute 
+  Clock.setHour(hour);  //Set the hour 
+  Clock.setDoW(DoW);    //Set the day of the week
+  Clock.setDate(date);  //Set the date of the month
+  Clock.setMonth(month);  //Set the month of the year
+  Clock.setYear(year);  //Set the year (Last two digits of the year)
 }
 
 void displayTime()
-{ 
-  display.clearDisplay();
-  display.setTextSize(1);
-  display.setTextColor(WHITE);
-  display.setCursor(0, 0);
-  display.print("20");
-  display.print(year);
-  display.print('-');
-  display.print(month);
-  display.print('-');
-  display.print(date);
-  display.print('\n');
-  display.print(hour);
-  display.print(':');
-  display.print(minute);
-  display.print(':');
-  display.print(second);
-  display.print('\n');
-  display.display();
+{
+  display.print("20");display.print(year);display.print(F("-"));display.print(month); display.print(F("-"));display.println(date);
+  display.print(hour);display.print(F(":"));display.print(minute);display.print(F(":"));display.println(second);
+  if(isSettingMode)
+  {
+    display.print(currentSettingValue);
+  }
 }
 
-void changeCounter()
+void changeValue(byte& value)
 {
-  if(not firstButtonState)
+  if(isFirstButtonPushed)
   {
-    if(screenNumber == 0)
+    --value;
+  }
+  if(isThirdButtonPushed)
+  {
+    ++value;
+  }
+}
+
+void handleButton()
+{
+  if(isSettingMode == false)
+  {
+    if(isFirstButtonPushed)
     {
-      screenNumber = NUM_OF_SCREEN - 1;
+      if(screenNumber == 0)
+      {
+        screenNumber = NUM_OF_SCREEN - 1;
+      }
+      else
+      {
+        --screenNumber;
+      }
     }
-    else
+    if(isThirdButtonPushed)
     {
-      --screenNumber;
+      if(screenNumber == NUM_OF_SCREEN - 1)
+      {
+        screenNumber = 0;
+      }
+      else
+      {
+        ++screenNumber;
+      }
+    }
+    if(isSecondButtonPushed && screenNumber == 1)
+    {
+      isSettingMode = true;
     }
   }
-
-  if(not thirdButtonState)
+  else
   {
-    if(screenNumber == NUM_OF_SCREEN - 1)
+    if(isSecondButtonPushed)
     {
-      screenNumber = 0;
+      if(currentSettingValue == 6)
+      {
+        currentSettingValue = 0;
+        isSettingMode = false;
+      }
+      else
+      {
+        setClock();
+        ++currentSettingValue;
+      }
+      
     }
-    else
+    switch(currentSettingValue)
     {
-      ++screenNumber;
+      case 0:
+      changeValue(year); break;
+      case 1:
+      changeValue(month); break;
+      case 2:
+      changeValue(date); break;
+      case 3:
+      changeValue(hour); break;
+      case 4:
+      changeValue(minute); break;
+      case 5:
+      changeValue(second); break;
     }
   }
 }
@@ -152,12 +203,9 @@ void refreshDisplay()
     case 0: 
     display.println(F("Pierwszy")); break;
     case 1:
-    display.println(F("Drugi")); break;
+    displayTime(); break;
     case 2:
     display.println(F("Trzeci")); break;
-
-    default:
-    display.println(F("DUPA")); break;
   }
   display.display();
 }
@@ -166,15 +214,15 @@ void loop()
 {
   if(shouldRefreshDisplay)
   {
-    changeCounter();
+    handleButton();
     refreshDisplay();
     shouldRefreshDisplay = false;
   }
 
-  if(millis() - refreshTime > 1000UL && screenNumber == 1)
+  if(millis() - refreshTime > 1000UL && screenNumber == 1 && not isSettingMode)
   {
-    readDS3231();
-    displayTime();
+    getTime();
+    refreshDisplay();
     refreshTime = millis();
   }
 }
