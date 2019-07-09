@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% include 'navbar.html' %}
+
+{% block content %}
+<h2>Devices</h2>
+<h4>Add new</h4>
+<form action="/Devices/Add" method="post">
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <span class="input-group-text" id="desc">Description</span>
+        </div>
+        <input type="text" class="form-control" placeholder="Description" aria-label="Username" aria-describedby="desc" name="description" required>
+    </div>
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <span class="input-group-text" id="token">Token</span>
+        </div>
+        <input type="text" class="form-control" placeholder="Token" aria-label="Username" aria-describedby="desc" name="token" value="{{ new_token }}" required>
+    </div>
+    <button class="btn btn-success">Add</button>
+</form>
+<h4>List</h4>
+<table class="table table-hover">
+    <thead>
+    <tr>
+        <td>#</td>
+        <td>Description</td>
+        <td>Token</td>
+        <td>Actions</td>
+    </tr>
+    </thead>
+    <tbody>
+        {% for device in devices %}
+        <tr>
+            <td> {{ device.id }} </td>
+            <td> {{ device.description }} </td>
+            <td> {{ device.token }} </td>
+            <td> <a href="/Devices/Remove/{{ device.id }}" class="btn btn-danger">Remove</a> </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -33,6 +33,24 @@ def login():
     return Handlers.loginHandler(request)
 
 
+@app.route("/Devices")
+@login_required
+def showDevices():
+    return Handlers.deviceShowHandler(request)
+
+
+@app.route("/Devices/Add", methods=["GET", "POST"])
+@login_required
+def addDevice():
+    return Handlers.deviceAddHandler(request)
+
+
+@app.route("/Devices/Remove/<id>", methods=["GET"])
+@login_required
+def removeDeivce(id):
+    return Handlers.deviceRemoveHandler(request, id)
+
+
 @app.route("/Logout")
 @login_required
 def logout():
