@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% include 'navbar.html' %}
+
+{% block content %}
+
+{% if user %}
+    <h2>Edit user</h2>
+{% else %}
+    <h2>Add new user</h2>
+{% endif %}
+
+<form action="/Users/Edit{% if user %}/{{user.id}}{% else %}/0{% endif %}" method="post">
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <span class="input-group-text" id="id">ID</span>
+        </div>
+        <input type="text" class="form-control" aria-label="Username" aria-describedby="name" name="id" value="{% if user %}{{user.id}}{% else %}0{% endif %}" required readonly>
+    </div>
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <span class="input-group-text" id="name">Name</span>
+        </div>
+        <input type="text" class="form-control" aria-label="Username" aria-describedby="name" name="name" value="{% if user %}{{user.name}}{% endif %}" required>
+    </div>
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <span class="input-group-text" id="pass">Password</span>
+        </div>
+        <input type="password" class="form-control" aria-label="Username" aria-describedby="pass" name="password" required>
+    </div>
+
+    {% if user %}
+        <button class="btn btn-success">Edit</button>
+    {% else %}
+        <button class="btn btn-success">Add</button>
+    {% endif %}
+</form>
+
+{% endblock %}

@@ -10,7 +10,6 @@ def handle(request):
     if request.method == 'POST':
         name = request.form['name']
         passwd = request.form['pass']
-        print(name, passwd)
         user = User.User.get(name=name)
 
         if user is not None and Utils.encrypt_password(passwd) == user.password:

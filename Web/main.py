@@ -33,6 +33,30 @@ def login():
     return Handlers.loginHandler(request)
 
 
+@app.route("/Users")
+@login_required
+def showUsers():
+    return Handlers.userShowHandler(request)
+
+
+@app.route("/Users/Logout/<id>")
+@login_required
+def logoutUser(id):
+    return Handlers.userLogoutHandler(request, id)
+
+@app.route("/Users/Edit")
+@app.route("/Users/Edit/<id>", methods=["GET", "POST"])
+@login_required
+def editUser(id = 0):
+    return Handlers.userEditHandler(request, id)
+
+
+@app.route("/Users/Remove/<id>", methods=["GET", "POST"])
+@login_required
+def removeUser(id = 0):
+    return Handlers.userRemoveHandler(request, id)
+
+
 @app.route("/Devices")
 @login_required
 def showDevices():
