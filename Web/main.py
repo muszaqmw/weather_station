@@ -75,6 +75,24 @@ def removeDeivce(id):
     return Handlers.deviceRemoveHandler(request, id)
 
 
+@app.route("/MeasuresTypes")
+@login_required
+def showMeasurementTypes():
+    return Handlers.measurementTypeShowHandler(request)
+
+
+@app.route("/MeasuresTypes/Add", methods=["GET", "POST"])
+@login_required
+def addMeasurementType():
+    return Handlers.measurementTypeAddHandler(request)
+
+
+@app.route("/MeasuresTypes/Remove/<id>", methods=["GET"])
+@login_required
+def removeMeasurementType(id):
+    return Handlers.measurementTypeRemoveHandler(request, id)
+
+
 @app.route("/Logout")
 @login_required
 def logout():

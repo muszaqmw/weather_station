@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% include 'navbar.html' %}
+
+{% block content %}
+<h2>Measurement types</h2>
+<h4>Add new</h4>
+<form action="/MeasuresTypes/Add" method="post">
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <span class="input-group-text" id="name">Name</span>
+        </div>
+        <input type="text" class="form-control" placeholder="Name" aria-label="Username" aria-describedby="name" name="name" required>
+    </div>
+    <div class="input-group mb-3">
+        <div class="input-group-prepend">
+            <span class="input-group-text" id="unit">Unit</span>
+        </div>
+        <input type="text" class="form-control" placeholder="Unit" aria-label="Username" aria-describedby="unit" name="unit" required>
+    </div>
+    <button class="btn btn-success">Add</button>
+</form>
+<h4>List</h4>
+<table class="table table-hover">
+    <thead>
+    <tr>
+        <td>#</td>
+        <td>Name</td>
+        <td>Unit</td>
+        <td>Actions</td>
+    </tr>
+    </thead>
+    <tbody>
+        {% for type in types %}
+        <tr>
+            <td> {{ type.id }} </td>
+            <td> {{ type.name }} </td>
+            <td> {{ type.unit }} </td>
+            <td> <a href="/MeasuresTypes/Remove/{{ type.id }}" class="btn btn-danger">Remove</a> </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

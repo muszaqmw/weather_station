@@ -7,6 +7,9 @@ from . import UserShowHandler
 from . import UserLogoutHandler
 from . import UserEditHandler
 from . import UserRemoveHandler
+from . import MeasurementTypeShowHandler
+from . import MeasurementTypeAddHandler
+from . import MeasurementTypeRemoveHandler
 
 
 loginHandler = LoginHandler.handle
@@ -18,3 +21,6 @@ userShowHandler = UserShowHandler.handle
 userLogoutHandler = UserLogoutHandler.handle
 userEditHandler = UserEditHandler.handle
 userRemoveHandler = UserRemoveHandler.handle
+measurementTypeShowHandler = MeasurementTypeShowHandler.handle
+measurementTypeAddHandler = MeasurementTypeAddHandler.handle
+measurementTypeRemoveHandler = MeasurementTypeRemoveHandler.handle
