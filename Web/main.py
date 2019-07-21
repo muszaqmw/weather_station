@@ -27,6 +27,10 @@ def index():
     return Handlers.dashboardHandler(request)
 
 
+@app.route("/Measurement/AddJson/<data>", methods=["GET", "POST"])
+def addMeasurementJson(data):
+    return Handlers.addMeasurementJSON(request, data)
+
 @app.route("/Login", methods=["GET", "POST"])
 @orm.db_session
 def login():

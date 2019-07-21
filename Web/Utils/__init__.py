@@ -10,3 +10,4 @@ def encrypt_password(password):
 
 def random_chars(length):
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
+
