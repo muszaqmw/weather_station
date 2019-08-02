@@ -21,7 +21,7 @@ orm.sql_debug(Config['DEBUG'])
 db.generate_mapping(create_tables=True)
 
 
-@app.route('/')
+@app.route('/', methods=["GET", "POST"])
 @login_required
 def index():
     return Handlers.dashboardHandler(request)

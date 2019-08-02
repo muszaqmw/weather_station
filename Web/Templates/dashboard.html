@@ -1,4 +1,54 @@
 {% extends "base.html" %}
+{% include 'navbar.html' %}
+
+{% block content %}
 
 <h2>Dashboard</h2>
-    {% include 'navbar.html' %}
+<form method="post" action="/">
+    <div class="row">
+        <div class="col-sm">
+            <select name="device" style="width:100%;">
+            {% for device in devices %}
+                <option value="{{ device.id }}" {% if device_id == device.id %}selected{% endif %}>
+                    {{ device.description }}
+                </option>
+            {% endfor %}
+            </select>
+        </div>
+        <div class="col-sm">
+            <select name="type" style="width:100%;">
+                <option value="-1" {% if type_id == -1 %}selected{% endif %}>
+                    All
+                </option>
+            {% for type in types %}
+                <option value="{{ type.id }}" {% if type_id == type.id %}selected{% endif %}>
+                    {{ type.name }} [{{ type.unit }}]
+                </option>
+            {% endfor %}
+            </select>
+        </div>
+        <div class="col-sm" style="width:100%;">
+            <button class="btn btn-primary">Show</button>
+       </div>
+    </div>
+</form>
+
+{% if measures %}
+<table class="table table-hover">
+    <thead>
+    <tr>
+        <td>Time</td>
+        <td>Value</td>
+    </tr>
+    </thead>
+    <tbody>
+    {% for measure in measures %}
+        <tr>
+            <td> {{ measure.time_reported }} </td>
+            <td> {{ measure.value  }} {{ measure.type.unit }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endblock %}
