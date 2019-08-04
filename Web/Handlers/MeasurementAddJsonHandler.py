@@ -1,3 +1,7 @@
+# make request like : http://127.0.0.1:5000/Measurement/AddJson/%7B%22token%22%20:%20%223IF8GRA2UTZD%22,%22measurements%22%20:[%7B%20%22id%22%20:%203,%20%22value%22%20:%2033%7D,%7B%20%22id%22%20:%204,%20%22value%22%20:%2010.5%7D]%7D
+# I mean : http://127.0.0.1:5000/Measurement/AddJson/{"token" : "3IF8GRA2UTZD","measurements" :[{ "id" : 3, "value" : 33},{ "id" : 4, "value" : 10.5}]}
+
+
 from pony import orm
 from Database import Device, MeasureType, Measure
 import json

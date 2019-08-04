@@ -11,6 +11,7 @@ from . import MeasurementTypeShowHandler
 from . import MeasurementTypeAddHandler
 from . import MeasurementTypeRemoveHandler
 from . import MeasurementAddJsonHandler
+from . import MeasurementAddSingleHandler
 
 
 loginHandler = LoginHandler.handle
@@ -26,3 +27,4 @@ measurementTypeShowHandler = MeasurementTypeShowHandler.handle
 measurementTypeAddHandler = MeasurementTypeAddHandler.handle
 measurementTypeRemoveHandler = MeasurementTypeRemoveHandler.handle
 addMeasurementJSON = MeasurementAddJsonHandler.handle
+addMeasurementSingle = MeasurementAddSingleHandler.handle

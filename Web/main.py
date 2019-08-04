@@ -31,6 +31,12 @@ def index():
 def addMeasurementJson(data):
     return Handlers.addMeasurementJSON(request, data)
 
+
+@app.route("/Measurement/Add", methods=["GET", "POST"])
+def addMeasurementSingle():
+    return Handlers.addMeasurementSingle(request)
+
+
 @app.route("/Login", methods=["GET", "POST"])
 @orm.db_session
 def login():
