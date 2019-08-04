@@ -1,6 +1,6 @@
 from flask import render_template
 from pony import orm
-from Database import Device,MeasureType
+from Database import Device, MeasureType, Measure
 
 
 @orm.db_session
@@ -9,8 +9,9 @@ def handle(request):
     devices = orm.select(d for d in Device.Device)
     types = orm.select(d for d in MeasureType.MeasureType)
 
-    device_id = request.form.get('device')
-    type_id = request.form.get('type')
+    device_id = request.args.get('device')
+    type_id = request.args.get('type')
+    filter = request.args.get('filter')
 
     if device_id:
         device = Device.Device.get(id=device_id)
@@ -24,9 +25,14 @@ def handle(request):
     else:
         type_id = -1
 
-    print(type_id)
-    print(device_id)
-    print(measures)
+    if filter:
+        print(filter)
+        measures = measures.filter(lambda m: filter in str(m.value) or filter in str(m.time_reported))
+    else:
+        filter = ""
+
+    if measures:
+        measures = measures.order_by(Measure.Measure.time_reported)
 
     return render_template('dashboard.html', devices=devices, types=types,measures=measures,
-                           device_id=int(device_id), type_id=int(type_id))
+                           device_id=int(device_id), type_id=int(type_id), filter=filter)

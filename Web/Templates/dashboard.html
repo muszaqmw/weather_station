@@ -4,7 +4,7 @@
 {% block content %}
 
 <h2>Dashboard</h2>
-<form method="post" action="/">
+<form method="get" action="/">
     <div class="row">
         <div class="col-sm">
             <select name="device" style="width:100%;">
@@ -27,6 +27,11 @@
             {% endfor %}
             </select>
         </div>
+        <div class="col-sm">
+            <input type="text" placeholder="Filter text" name="filter" value="{{ filter }}"/>
+       </div>
+    </div>
+    <div class="row">
         <div class="col-sm" style="width:100%;">
             <button class="btn btn-primary">Show</button>
        </div>
